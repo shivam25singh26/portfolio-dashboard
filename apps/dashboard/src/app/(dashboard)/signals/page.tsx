@@ -1,13 +1,22 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Zap } from "lucide-react";
+import { Zap, X } from "lucide-react";
 import { useSession } from "next-auth/react";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function SignalsPage() {
   const { data: session } = useSession();
   const [aiInsights, setAiInsights] = useState<any[]>([]);
   const [insightsLoading, setInsightsLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  
+  // Real-time quotes state
+  const [quotes, setQuotes] = useState<Record<string, number>>({});
+  
+  // Execution Modal state
+  const [tradeModal, setTradeModal] = useState<any>(null);
+  const [tradeQuantity, setTradeQuantity] = useState<number>(100);
+  const [tradeLoading, setTradeLoading] = useState(false);
 
   const toggleExpand = (id: string) => {
     if (expandedId === id) {
@@ -28,10 +37,51 @@ export default function SignalsPage() {
         console.error("Failed to fetch insights", err);
         setInsightsLoading(false);
       });
+      
+    // WebSocket for Live Prices
+    const wsUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/^https/, 'wss').replace(/^http/, 'ws') || 'ws://127.0.0.1:8080';
+    const ws = new WebSocket(`${wsUrl}/ws/live`);
+    ws.onmessage = (event) => {
+      try {
+        const tick = JSON.parse(event.data);
+        if (tick.ticker && tick.last_price) {
+          setQuotes(prev => ({ ...prev, [tick.ticker]: tick.last_price }));
+        }
+      } catch (e) {}
+    };
+    return () => ws.close();
   }, []);
+
+  const handleExecuteTrade = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!session?.user?.email || !tradeModal) return toast.error('Please log in to execute trades');
+    setTradeLoading(true);
+    
+    try {
+      const res = await fetch('/go-api/paper/execute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Email': session.user.email
+        },
+        body: JSON.stringify({ signal_id: tradeModal.ID, quantity: Number(tradeQuantity) })
+      });
+      if (res.ok) {
+        toast.success(`Trade executed: ${tradeQuantity}x ${tradeModal.symbol}`);
+        setTradeModal(null);
+      } else {
+        toast.error('Failed to execute paper trade');
+      }
+    } catch (err) {
+      toast.error('Error executing trade');
+    } finally {
+      setTradeLoading(false);
+    }
+  };
 
   return (
     <>
+      <Toaster position="top-right" toastOptions={{ style: { background: 'var(--panel-2)', color: 'var(--foreground)', border: '1px solid var(--line)', fontFamily: "'Spline Sans Mono', monospace", fontSize: '13px' } }} />
       <header>
         <div>
           <h1 style={{ display: 'flex', alignItems: 'center', gap: '16px' }}><Zap color="var(--speculative)" size={32} /> AI Trade Signals</h1>
@@ -84,9 +134,9 @@ export default function SignalsPage() {
                     
                     <div className="live-quote" style={{ flexDirection: 'row', gap: '10px', marginTop: '16px', marginBottom: '16px', display: expandedId === String(insight.ID) ? 'flex' : 'none' }}>
                       <div className="metric-item" style={{ background: '#1a1f26', padding: '8px', borderRadius: '8px', flex: 1 }}>
-                        <span style={{ color: 'var(--dim)', fontSize: '11px' }}>Current</span>
-                        <strong style={{ display: 'block', fontSize: '15px', color: 'var(--foreground)' }}>
-                          {insight.ltp > 0 ? `₹${insight.ltp.toFixed(2)}` : 'N/A'}
+                        <span style={{ color: 'var(--dim)', fontSize: '11px' }}>Current (Live)</span>
+                        <strong style={{ display: 'block', fontSize: '15px', color: quotes[insight.symbol] ? 'var(--foreground)' : 'var(--dim)' }}>
+                          ₹{quotes[insight.symbol] ? quotes[insight.symbol].toFixed(2) : (insight.ltp > 0 ? insight.ltp.toFixed(2) : 'N/A')}
                         </strong>
                       </div>
                       <div className="metric-item" style={{ background: '#1a1f26', padding: '8px', borderRadius: '8px', flex: 1 }}>
@@ -110,34 +160,11 @@ export default function SignalsPage() {
                       </div>
                     </div>
                     <div style={{ marginTop: '16px', display: expandedId === String(insight.ID) ? 'block' : 'none' }}>
-                       <button onClick={async (e) => { 
+                       <button onClick={(e) => { 
                          e.stopPropagation(); 
-                         // Mocking user email since we don't have session imported yet.
-                         // Ideally we'd use next-auth useSession() here. For now we use the test account.
-                         const userEmail = session?.user?.email;
-                         if (!userEmail) {
-                           alert('Please log in to execute paper trades');
-                           return;
-                         } 
-                         try {
-                           const res = await fetch('/go-api/paper/execute', {
-                             method: 'POST',
-                             headers: {
-                               'Content-Type': 'application/json',
-                               'X-User-Email': userEmail
-                             },
-                             body: JSON.stringify({ signal_id: insight.ID, quantity: 100 })
-                           });
-                           if (res.ok) {
-                             alert('Paper trade executed successfully for ' + insight.symbol);
-                           } else {
-                             alert('Failed to execute paper trade');
-                           }
-                         } catch (err) {
-                           console.error(err);
-                           alert('Error executing trade');
-                         }
-                       }} style={{ width: '100%', padding: '12px', background: insight.action === 'SHORT' ? 'var(--danger)' : 'var(--accent)', color: '#000', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Spline Sans Mono', monospace" }}>Execute Paper {insight.action || 'LONG'}</button>
+                         setTradeModal(insight);
+                         setTradeQuantity(100);
+                       }} style={{ width: '100%', padding: '12px', background: insight.action === 'SHORT' ? 'var(--danger)' : 'var(--accent)', color: '#000', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Spline Sans Mono', monospace" }}>Execute Trade {insight.action || 'LONG'}</button>
                     </div>
                   </div>
                 ))}
@@ -181,9 +208,9 @@ export default function SignalsPage() {
                     
                     <div className="live-quote" style={{ flexDirection: 'row', gap: '10px', marginTop: '16px', marginBottom: '16px', display: expandedId === String(insight.ID) ? 'flex' : 'none' }}>
                       <div className="metric-item" style={{ background: '#1a1f26', padding: '8px', borderRadius: '8px', flex: 1 }}>
-                        <span style={{ color: 'var(--dim)', fontSize: '11px' }}>Current</span>
-                        <strong style={{ display: 'block', fontSize: '15px', color: 'var(--foreground)' }}>
-                          {insight.ltp > 0 ? `₹${insight.ltp.toFixed(2)}` : 'N/A'}
+                        <span style={{ color: 'var(--dim)', fontSize: '11px' }}>Current (Live)</span>
+                        <strong style={{ display: 'block', fontSize: '15px', color: quotes[insight.symbol] ? 'var(--foreground)' : 'var(--dim)' }}>
+                          ${quotes[insight.symbol] ? quotes[insight.symbol].toFixed(2) : (insight.ltp > 0 ? insight.ltp.toFixed(2) : 'N/A')}
                         </strong>
                       </div>
                       <div className="metric-item" style={{ background: '#1a1f26', padding: '8px', borderRadius: '8px', flex: 1 }}>
@@ -207,34 +234,11 @@ export default function SignalsPage() {
                       </div>
                     </div>
                     <div style={{ marginTop: '16px', display: expandedId === String(insight.ID) ? 'block' : 'none' }}>
-                       <button onClick={async (e) => { 
+                       <button onClick={(e) => { 
                          e.stopPropagation(); 
-                         // Mocking user email since we don't have session imported yet.
-                         // Ideally we'd use next-auth useSession() here. For now we use the test account.
-                         const userEmail = session?.user?.email;
-                         if (!userEmail) {
-                           alert('Please log in to execute paper trades');
-                           return;
-                         } 
-                         try {
-                           const res = await fetch('/go-api/paper/execute', {
-                             method: 'POST',
-                             headers: {
-                               'Content-Type': 'application/json',
-                               'X-User-Email': userEmail
-                             },
-                             body: JSON.stringify({ signal_id: insight.ID, quantity: 100 })
-                           });
-                           if (res.ok) {
-                             alert('Paper trade executed successfully for ' + insight.symbol);
-                           } else {
-                             alert('Failed to execute paper trade');
-                           }
-                         } catch (err) {
-                           console.error(err);
-                           alert('Error executing trade');
-                         }
-                       }} style={{ width: '100%', padding: '12px', background: insight.action === 'SHORT' ? 'var(--danger)' : 'var(--accent)', color: '#000', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Spline Sans Mono', monospace" }}>Execute Paper {insight.action || 'LONG'}</button>
+                         setTradeModal(insight);
+                         setTradeQuantity(1);
+                       }} style={{ width: '100%', padding: '12px', background: insight.action === 'SHORT' ? 'var(--danger)' : 'var(--accent)', color: '#000', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Spline Sans Mono', monospace" }}>Execute Trade {insight.action || 'LONG'}</button>
                     </div>
                   </div>
                 ))}
@@ -243,6 +247,40 @@ export default function SignalsPage() {
           </div>
         )}
       </main>
+
+      {tradeModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--panel)', border: '1px solid var(--line)', borderRadius: '12px', width: '380px', padding: '24px', position: 'relative' }}>
+            <button onClick={() => setTradeModal(null)} style={{ position: 'absolute', top: '16px', right: '16px', background: 'transparent', border: 'none', color: 'var(--dim)', cursor: 'pointer' }}><X size={20}/></button>
+            <h3 style={{ fontSize: '18px', color: 'var(--ink)', marginBottom: '8px' }}>Execute Trade</h3>
+            <div style={{ color: 'var(--dim)', fontSize: '13px', marginBottom: '24px' }}>
+              Confirm your {tradeModal.action} position for <strong>{tradeModal.symbol}</strong>.
+            </div>
+            
+            <form onSubmit={handleExecuteTrade}>
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontSize: '12px', color: 'var(--dim)', marginBottom: '8px' }}>Quantity (Shares/Tokens)</label>
+                <input 
+                  type="number" 
+                  min="1" 
+                  step="1"
+                  value={tradeQuantity} 
+                  onChange={(e) => setTradeQuantity(Number(e.target.value))} 
+                  required 
+                  style={{ width: '100%', padding: '12px 14px', background: 'var(--bg)', border: '1px solid var(--line)', color: 'var(--ink)', borderRadius: '6px', fontSize: '16px' }} 
+                />
+              </div>
+              <button 
+                type="submit" 
+                disabled={tradeLoading} 
+                style={{ width: '100%', padding: '12px', background: tradeModal.action === 'SHORT' ? 'var(--danger)' : 'var(--accent)', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: tradeLoading ? 'not-allowed' : 'pointer' }}
+              >
+                {tradeLoading ? "Executing..." : `Confirm ${tradeModal.action}`}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }

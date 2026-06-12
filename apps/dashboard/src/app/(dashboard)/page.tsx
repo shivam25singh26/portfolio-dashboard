@@ -19,13 +19,14 @@ export default function DashboardOverview() {
     }
   }, [status, router]);
 
-  const [activeGeo, setActiveGeo] = useState<"US" | "Europe" | "India" | "Pre-IPO">("India");
+  const [activeGeo, setActiveGeo] = useState<"India">("India");
   const [activeType, setActiveType] = useState<string>("all");
   const [query, setQuery] = useState("");
   const [marketData, setMarketData] = useState<any>(stocksData);
   const [isIndiaFetched, setIsIndiaFetched] = useState(false);
   const [loadingUniverse, setLoadingUniverse] = useState(false);
   const [openSectors, setOpenSectors] = useState<Record<number, boolean>>({});
+  const [visibleSectors, setVisibleSectors] = useState(15);
   const [quotes, setQuotes] = useState<Record<string, any>>({});
   const [details, setDetails] = useState<Record<string, { metrics?: any, candle?: any, news?: any[], loading?: boolean, error?: boolean }>>({});
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
@@ -182,7 +183,7 @@ export default function DashboardOverview() {
 
   useEffect(() => {
     // Connect to Go Backend WebSocket for Live Prices
-    const wsUrl = process.env.NEXT_PUBLIC_API_URL?.replace('http', 'ws') || 'ws://127.0.0.1:8080';
+    const wsUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/^https/, 'wss').replace(/^http/, 'ws') || 'ws://127.0.0.1:8080';
     const ws = new WebSocket(`${wsUrl}/ws/live`);
     
     ws.onmessage = (event) => {
@@ -298,6 +299,12 @@ export default function DashboardOverview() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
+          <div className="nav-tabs" style={{ marginBottom: '0' }}>
+            <button className={activeGeo === "India" ? "active" : ""} onClick={() => setActiveGeo("India")}>India</button>
+          </div>
+        {activeGeo === "India" && (
+          <a href="/fo" style={{ padding: '10px 16px', background: 'var(--accent)', color: '#04130b', textDecoration: 'none', borderRadius: 'var(--radius)', fontFamily: "'Spline Sans Mono', monospace", fontSize: '12px', fontWeight: 600, display: 'inline-block' }}>F&O Terminal ↗</a>
+        )}
         <div className="seg" id="typeFilter">
           <button className={activeType === "all" ? "on" : ""} onClick={() => setActiveType("all")}>ALL</button>
           <button className={activeType === "established" ? "on" : ""} onClick={() => setActiveType("established")}>ESTABLISHED</button>
@@ -416,7 +423,16 @@ export default function DashboardOverview() {
                   <h2 style={{ fontFamily: 'Fraunces, serif', fontSize: '24px', paddingBottom: '12px', borderBottom: '1px solid var(--line)', marginBottom: '24px', color: 'var(--ink)' }}>
                     NSE & BSE Listed Stocks
                   </h2>
-                  {listedSectors.map((sec: any, i: number) => renderSectorBlock(sec, i))}
+                  {listedSectors.slice(0, visibleSectors).map((sec: any, i: number) => renderSectorBlock(sec, i))}
+                  
+                  {visibleSectors < listedSectors.length && (
+                    <button 
+                      onClick={() => setVisibleSectors(prev => prev + 15)}
+                      style={{ width: '100%', padding: '16px', marginTop: '24px', background: 'var(--panel)', border: '1px solid var(--line)', color: 'var(--ink)', borderRadius: 'var(--radius)', cursor: 'pointer', fontFamily: "'Spline Sans Mono', monospace", fontWeight: 600 }}
+                    >
+                      Load More Sectors ({listedSectors.length - visibleSectors} remaining) ↓
+                    </button>
+                  )}
                 </div>
               )}
               

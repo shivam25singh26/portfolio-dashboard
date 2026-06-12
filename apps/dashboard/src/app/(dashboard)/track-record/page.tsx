@@ -52,17 +52,10 @@ export default function TrackRecordPage() {
     return <div className="empty-state">Loading AI Performance Metrics...</div>;
   }
 
-  // Transform curve data for chart
-  // The ChartComponent expects an array of objects with c (close), h (high), l (low), o (open), t (timestamp)
-  // We mock the OHLC based on the single value for visual representation, since it's a portfolio equity curve
-  const chartData = curve.map((pt, i) => {
-    const prev = i > 0 ? curve[i-1].value : pt.value;
+  const chartData = curve.map((pt) => {
     return {
       t: new Date(pt.date).getTime() / 1000,
-      o: prev,
-      c: pt.value,
-      h: Math.max(prev, pt.value) * 1.01,
-      l: Math.min(prev, pt.value) * 0.99
+      value: pt.value
     };
   });
 
@@ -109,7 +102,7 @@ export default function TrackRecordPage() {
           </h3>
           <div style={{ height: '400px', width: '100%', position: 'relative' }}>
             {chartData.length > 0 ? (
-              <ChartComponent data={chartData} isMini={false} />
+              <ChartComponent data={chartData} type="area" color="#3ddc91" isMini={false} />
             ) : (
               <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--dim)' }}>
                 No equity curve data available. Execute some trades first.
