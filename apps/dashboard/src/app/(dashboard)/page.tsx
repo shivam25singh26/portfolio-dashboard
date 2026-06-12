@@ -343,15 +343,7 @@ export default function DashboardOverview() {
                         style={{ '--type-color': colorMap[st.type] } as any}
                       >
                         <div className="card-top">
-                          <div>
-                            <div className="ticker">{st.t.split('.')[0]}</div>
-                            <div className="company">{st.c}</div>
-                          </div>
-                          <div className="badges">
-                            {st.trailing_pe > 0 && <span className="badge" style={{background: 'var(--bg2)', color: 'var(--ink)'}}>PE: {st.trailing_pe.toFixed(1)}</span>}
-                            {st.eps !== 0 && st.eps !== undefined && <span className="badge" style={{background: 'var(--bg2)', color: 'var(--ink)'}}>EPS: {st.eps.toFixed(1)}</span>}
-                            <span className="badge cap" style={{background: st.cap === 'Large' ? 'rgba(46,160,67,0.1)' : 'var(--bg2)', color: st.cap === 'Large' ? 'var(--established)' : 'var(--muted)'}}>{st.cap}</span>
-                          </div>
+                          <div className="ticker">{st.t.split('.')[0]}</div>
                         </div>
                         
                         <div className="live-quote">
@@ -503,6 +495,8 @@ export default function DashboardOverview() {
                         </span>
                       </div>
                       <div className="badges">
+                        {selectedStock.trailing_pe > 0 && <span className="badge" style={{background: 'var(--bg2)', color: 'var(--ink)'}}>PE: {selectedStock.trailing_pe.toFixed(1)}</span>}
+                        {selectedStock.eps !== 0 && selectedStock.eps !== undefined && <span className="badge" style={{background: 'var(--bg2)', color: 'var(--ink)'}}>EPS: {selectedStock.eps.toFixed(1)}</span>}
                         <span className={`badge ${selectedStock.type}`}>{selectedStock.type}</span>
                         <span className="badge cap">{selectedStock.cap} cap</span>
                       </div>
