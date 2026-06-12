@@ -144,6 +144,14 @@ export default function DashboardOverview() {
           subs: Object.values(sec.subsMap)
         }));
 
+        const initialQuotes: Record<string, any> = {};
+        apiFlat.forEach((st: any) => {
+          if (st.last_price > 0) {
+            initialQuotes[st.t] = { c: st.last_price, dp: st.change_percent };
+          }
+        });
+
+        setQuotes((prev: any) => ({ ...prev, ...initialQuotes }));
         setMarketData((prev: any) => ({ ...prev, India: newIndiaData }));
         setIsIndiaFetched(true);
       }
@@ -205,54 +213,24 @@ export default function DashboardOverview() {
   const toggleCard = async (ticker: string) => {
     if (expandedCard === ticker) {
       setExpandedCard(null);
+      setSelectedStock(null);
       return;
     }
+    const stock = allStocks.find((s: any) => s.t === ticker);
+    setSelectedStock(stock);
     setExpandedCard(ticker);
-    
-    if (!details[ticker]) {
-      setDetails(prev => ({ ...prev, [ticker]: { loading: true } }));
-      
-      if (ticker.startsWith("PRIV.")) {
-        setTimeout(() => {
-          const val = 10 + (ticker.length * 3);
-          const metrics = { metric: { marketCapitalization: val * 1000 } };
-          
-          const c = [], h = [], l = [], o = [], t = [];
-          let price = quotes[ticker]?.c || 50;
-          const now = Math.floor(Date.now()/1000);
-          for(let i=0; i<180; i++) {
-             t.push(now - ((180-i)*86400));
-             o.push(price);
-             price += (Math.random() - 0.48) * 2;
-             c.push(price);
-             h.push(Math.max(o[i], c[i]) + Math.random());
-             l.push(Math.min(o[i], c[i]) - Math.random());
-          }
-          const candle = { s: "ok", c, h, l, o, t };
-          
-          const news = [
-            { source: "TechCrunch", datetime: now - 86400, headline: `${ticker.replace("PRIV.", "")} announces major secondary tender offer at elevated valuation.` },
-            { source: "Bloomberg", datetime: now - 172800, headline: `Insiders say ${ticker.replace("PRIV.", "")} is preparing for an eventual IPO.` }
-          ];
+    setDetails((prev: any) => ({ ...prev, [ticker]: { loading: true } }));
 
-          setDetails(prev => ({ ...prev, [ticker]: { metrics, candle, news, loading: false } }));
-        }, 600);
-        return;
-      }
-
-      try {
-        const [metRes, canRes, newsRes] = await Promise.all([
-          fetch(`/api/metric?symbol=${ticker}`),
-          fetch(`/api/candle?symbol=${ticker}`),
-          fetch(`/api/news?symbol=${ticker}`)
-        ]);
-        const metrics = await metRes.json();
-        const candle = await canRes.json();
-        const news = await newsRes.json();
-        setDetails(prev => ({ ...prev, [ticker]: { metrics, candle, news, loading: false } }));
-      } catch (e) {
-        setDetails(prev => ({ ...prev, [ticker]: { error: true, loading: false } }));
-      }
+    try {
+      const [canRes, newsRes] = await Promise.all([
+        fetch(`/api/candle?symbol=${ticker}`),
+        fetch(`/api/news?symbol=${ticker}`)
+      ]);
+      const candle = await canRes.json();
+      const news = await newsRes.json();
+      setDetails((prev: any) => ({ ...prev, [ticker]: { candle, news, loading: false } }));
+    } catch (e) {
+      setDetails((prev: any) => ({ ...prev, [ticker]: { error: true, loading: false } }));
     }
   };
 
@@ -557,17 +535,15 @@ export default function DashboardOverview() {
                 {sd?.loading && <div className="details-loading">Loading deep metrics...</div>}
                 {sd?.error && <div className="details-error">Failed to load API details.</div>}
 
-                {sd?.metrics && (
-                  <div className="drawer-section">
-                    <h3>Technicals & Valuation</h3>
-                    <div className="metrics-grid">
-                      <div className="metric-item"><span>Mkt Cap</span><strong>{sd.metrics.metric?.marketCapitalization ? '$' + (sd.metrics.metric.marketCapitalization / 1000).toFixed(1) + 'B' : 'N/A'}</strong></div>
-                      <div className="metric-item"><span>P/E (Ann)</span><strong>{sd.metrics.metric?.peNormalizedAnnual?.toFixed(1) || 'N/A'}</strong></div>
-                      <div className="metric-item"><span>52W High</span><strong>{sd.metrics.metric?.['52WeekHigh'] ? '$' + sd.metrics.metric['52WeekHigh'].toFixed(2) : 'N/A'}</strong></div>
-                      <div className="metric-item"><span>52W Low</span><strong>{sd.metrics.metric?.['52WeekLow'] ? '$' + sd.metrics.metric['52WeekLow'].toFixed(2) : 'N/A'}</strong></div>
-                    </div>
+                <div className="drawer-section">
+                  <h3>Technicals & Valuation</h3>
+                  <div className="metrics-grid">
+                    <div className="metric-item"><span>Mkt Cap</span><strong>{selectedStock.market_cap_val > 0 ? (activeGeo === 'India' ? '₹' : '$') + (selectedStock.market_cap_val / 1000000000).toFixed(1) + 'B' : 'N/A'}</strong></div>
+                    <div className="metric-item"><span>P/E (Ann)</span><strong>{selectedStock.trailing_pe > 0 ? selectedStock.trailing_pe.toFixed(1) : 'N/A'}</strong></div>
+                    <div className="metric-item"><span>EPS</span><strong>{selectedStock.eps !== 0 ? selectedStock.eps.toFixed(2) : 'N/A'}</strong></div>
+                    <div className="metric-item"><span>P/B Ratio</span><strong>{selectedStock.pb_ratio > 0 ? selectedStock.pb_ratio.toFixed(2) : 'N/A'}</strong></div>
                   </div>
-                )}
+                </div>
 
                 {sd?.candle?.s === 'ok' && (
                   <div className="drawer-section">
