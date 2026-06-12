@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: fintech-core-api
+    env: go
+    rootDir: apps/core-api
+    buildCommand: go build -o api cmd/api/main.go
+    startCommand: ./api
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: AMQP_URL
+        sync: false
+      - key: ANGELONE_CLIENT_ID
+        sync: false
+      - key: ANGELONE_PIN
+        sync: false
+      - key: ANGELONE_API_KEY
+        sync: false
+      - key: ANGELONE_TOTP_SECRET
+        sync: false
+
+  - type: worker
+    name: ai-signal-engine
+    env: python
+    rootDir: apps/ai-engine
+    buildCommand: pip install -r requirements.txt
+    startCommand: python mq.py
+    envVars:
+      - key: AMQP_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+
+  - type: worker
+    name: ai-telegram-bot
+    env: python
+    rootDir: apps/ai-engine
+    buildCommand: pip install -r requirements.txt
+    startCommand: python telegram_bot.py
+    envVars:
+      - key: AMQP_URL
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false

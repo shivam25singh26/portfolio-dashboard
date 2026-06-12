@@ -1,0 +1,37 @@
+{
+  "name": "dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "start:mobile": "concurrently \"cd ../core-api && go run cmd/api/main.go\" \"NEXTAUTH_URL=https://sensitive-chemistry-feb-gives.trycloudflare.com next dev -H 127.0.0.1\""
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/cli": "^8.4.0",
+    "@capacitor/core": "^8.4.0",
+    "framer-motion": "^12.40.0",
+    "lightweight-charts": "^5.2.0",
+    "lucide-react": "^1.17.0",
+    "next": "16.2.6",
+    "next-auth": "^4.24.14",
+    "puppeteer": "^25.1.0",
+    "qrcode.react": "^4.2.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "recharts": "^3.8.1",
+    "stock-nse-india": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "concurrently": "^10.0.3",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "typescript": "^5"
+  }
+}

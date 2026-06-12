@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Growth Engines — Disruptive Innovation Research Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Spline+Sans+Mono:wght@400;500;600&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e0d;
+    --panel: #111614;
+    --panel-2: #161d1a;
+    --line: #232e2a;
+    --ink: #e8efe9;
+    --muted: #8ba093;
+    --dim: #5d6f66;
+    --accent: #3ddc91;
+    --accent-2: #f0b429;
+    --danger: #ff6b6b;
+    --speculative: #ff924d;
+    --established: #5ab0ff;
+    --aggressive: #c77dff;
+    --radius: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Archivo', sans-serif;
+    line-height: 1.5;
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(61,220,145,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(240,180,41,0.05), transparent 45%);
+    min-height: 100vh;
+  }
+  ::selection { background: var(--accent); color: #04130b; }
+
+  /* ---- Header ---- */
+  header {
+    padding: 38px 48px 28px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(255,255,255,0.012) 38px, rgba(255,255,255,0.012) 39px);
+    pointer-events: none;
+  }
+  .eyebrow {
+    font-family: 'Spline Sans Mono', monospace;
+    font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 14px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: clamp(28px, 5vw, 52px);
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+    max-width: 18ch;
+  }
+  h1 em { font-style: italic; color: var(--accent-2); }
+  .sub {
+    color: var(--muted); margin-top: 14px; max-width: 70ch; font-size: 15px;
+  }
+
+  /* ---- Disclaimer banner ---- */
+  .disclaimer {
+    margin: 24px 48px 0;
+    background: linear-gradient(180deg, rgba(255,107,107,0.09), rgba(255,107,107,0.03));
+    border: 1px solid rgba(255,107,107,0.35);
+    border-left: 3px solid var(--danger);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    font-size: 13.5px;
+    color: #ffd9d9;
+  }
+  .disclaimer strong { color: #fff; }
+  .disclaimer ul { margin: 8px 0 0 18px; color: #f3c9c9; }
+  .disclaimer li { margin: 3px 0; }
+
+  /* ---- Controls ---- */
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    padding: 24px 48px;
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(10,14,13,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .search {
+    flex: 1; min-width: 220px;
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 11px 14px;
+    color: var(--ink); font-family: 'Spline Sans Mono', monospace; font-size: 13px;
+  }
+  .search:focus { outline: none; border-color: var(--accent); }
+  .seg { display: flex; gap: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .seg button {
+    background: var(--panel); color: var(--muted); border: none;
+    padding: 10px 14px; font-family: 'Spline Sans Mono', monospace;
+    font-size: 11px; letter-spacing: 0.05em; cursor: pointer; transition: 0.15s;
+  }
+  .seg button:hover { color: var(--ink); }
+  .seg button.on { background: var(--accent); color: #04130b; font-weight: 600; }
+  .api-btn {
+    background: var(--panel-2); border: 1px solid var(--line); color: var(--accent);
+    padding: 10px 16px; border-radius: var(--radius); cursor: pointer;
+    font-family: 'Spline Sans Mono', monospace; font-size: 11px; letter-spacing: 0.05em;
+  }
+  .api-btn:hover { border-color: var(--accent); }
+
+  /* ---- Stats strip ---- */
+  .stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr));
+    gap: 1px; background: var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .stat { background: var(--bg); padding: 18px 24px; }
+  .stat .n { font-family: 'Fraunces', serif; font-weight: 900; font-size: 30px; color: var(--accent); }
+  .stat .l { font-family: 'Spline Sans Mono', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--dim); margin-top: 2px; }
+
+  /* ---- Main ---- */
+  main { padding: 8px 48px 80px; }
+
+  .sector {
+    margin-top: 40px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .sector-head {
+    display: flex; align-items: center; gap: 16px;
+    padding: 20px 26px; cursor: pointer;
+    background: linear-gradient(90deg, var(--panel-2), var(--panel));
+    border-bottom: 1px solid transparent;
+    transition: 0.2s;
+  }
+  .sector.open .sector-head { border-bottom-color: var(--line); }
+  .sector-head:hover { background: var(--panel-2); }
+  .sector-num {
+    font-family: 'Spline Sans Mono', monospace; font-size: 12px;
+    color: var(--accent); border: 1px solid var(--line); border-radius: 4px;
+    padding: 4px 8px; min-width: 38px; text-align: center;
+  }
+  .sector-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 22px; flex: 1; letter-spacing: -0.01em; }
+  .sector-count { font-family: 'Spline Sans Mono', monospace; font-size: 11px; color: var(--dim); }
+  .chevron { color: var(--muted); transition: transform 0.25s; font-size: 14px; }
+  .sector.open .chevron { transform: rotate(90deg); }
+
+  .sector-body { display: none; padding: 8px 26px 26px; }
+  .sector.open .sector-body { display: block; }
+
+  .subind { margin-top: 22px; }
+  .subind-name {
+    font-family: 'Spline Sans Mono', monospace; font-size: 12px;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-2);
+    padding-bottom: 8px; border-bottom: 1px dashed var(--line); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .subind-name .tag-shift {
+    font-size: 9px; color: var(--dim); border: 1px solid var(--line);
+    padding: 2px 7px; border-radius: 20px; letter-spacing: 0.1em;
+  }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px,1fr)); gap: 14px; }
+
+  .card {
+    background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 16px 18px; transition: 0.18s;
+    position: relative; overflow: hidden;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .card::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--type-color, var(--dim));
+  }
+  .card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .ticker {
+    font-family: 'Spline Sans Mono', monospace; font-weight: 600; font-size: 18px;
+    color: var(--ink); letter-spacing: 0.02em;
+  }
+  .company { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+  .badges { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+  .badge {
+    font-family: 'Spline Sans Mono', monospace; font-size: 9px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 7px; border-radius: 4px; white-space: nowrap;
+  }
+  .badge.established { background: rgba(90,176,255,0.14); color: var(--established); border: 1px solid rgba(90,176,255,0.3); }
+  .badge.aggressive { background: rgba(199,125,255,0.14); color: var(--aggressive); border: 1px solid rgba(199,125,255,0.3); }
+  .badge.speculative { background: rgba(255,146,77,0.14); color: var(--speculative); border: 1px solid rgba(255,146,77,0.3); }
+  .badge.cap { background: var(--panel); color: var(--dim); border: 1px solid var(--line); }
+
+  .live-quote {
+    font-family: 'Spline Sans Mono', monospace; font-size: 12px;
+    margin-top: 10px; padding: 8px 10px; border-radius: 5px;
+    background: var(--panel); border: 1px solid var(--line); color: var(--dim);
+    display: flex; flex-direction: column; gap: 6px; justify-content: center; align-items: stretch;
+  }
+  .live-quote .lq-top { display: flex; justify-content: space-between; width: 100%; align-items: center; }
+  .live-quote .price { color: var(--ink); font-weight: 600; }
+  .live-quote .up { color: var(--accent); }
+  .live-quote .down { color: var(--danger); }
+
+  .day-range { display: flex; align-items: center; gap: 6px; font-size: 9px; color: var(--dim); width: 100%; }
+  .dr-bar { flex: 1; height: 3px; background: var(--line); border-radius: 2px; position: relative; }
+  .dr-indicator { position: absolute; top: -2px; width: 3px; height: 7px; background: var(--accent); border-radius: 1px; transform: translateX(-50%); }
+
+  .card { cursor: pointer; }
+  .card.expanded { grid-row: span 2; border-color: var(--dim); }
+  .card-details { display: none; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--line); }
+  .card.expanded .card-details { display: block; animation: fadeIn 0.3s ease-out; }
+  
+  .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .metric-item { display: flex; flex-direction: column; font-family: 'Spline Sans Mono', monospace; }
+  .metric-item span { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.05em; }
+  .metric-item strong { font-size: 12px; color: var(--ink); font-weight: normal; margin-top: 2px; }
+  
+  .sparkline-container { background: var(--panel-2); padding: 10px; border-radius: 6px; border: 1px solid var(--line); }
+  .sparkline-title { font-family: 'Spline Sans Mono', monospace; font-size: 9px; color: var(--dim); text-transform: uppercase; margin-bottom: 6px; }
+  .sparkline { width: 100%; height: 40px; overflow: visible; }
+  
+  .details-loading, .details-error { font-family: 'Spline Sans Mono', monospace; font-size: 11px; color: var(--dim); text-align: center; padding: 10px 0; }
+  .details-error { color: var(--speculative); }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .field { margin-top: 11px; }
+  .field-label {
+    font-family: 'Spline Sans Mono', monospace; font-size: 9px;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); margin-bottom: 3px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .field-label .dot { width: 5px; height: 5px; border-radius: 50%; }
+  .dot.catalyst { background: var(--accent); }
+  .dot.moat { background: var(--established); }
+  .dot.risk { background: var(--danger); }
+  .field-text { font-size: 13px; color: var(--ink); line-height: 1.45; }
+  .field.risk .field-text { color: #ffc4c4; }
+
+  footer {
+    padding: 30px 48px; border-top: 1px solid var(--line);
+    color: var(--dim); font-size: 12px; font-family: 'Spline Sans Mono', monospace;
+    line-height: 1.7;
+  }
+  footer a { color: var(--accent); }
+
+  /* ---- Modal ---- */
+  .modal-bg {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; padding: 28px; max-width: 540px; width: 100%;
+  }
+  .modal h3 { font-family: 'Fraunces', serif; font-size: 22px; margin-bottom: 8px; }
+  .modal p { color: var(--muted); font-size: 13.5px; margin-bottom: 14px; }
+  .modal input {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 11px 13px; color: var(--ink);
+    font-family: 'Spline Sans Mono', monospace; font-size: 13px; margin-bottom: 14px;
+  }
+  .modal input:focus { outline: none; border-color: var(--accent); }
+  .modal-actions { display: flex; gap: 10px; }
+  .modal-actions button {
+    flex: 1; padding: 11px; border-radius: var(--radius); cursor: pointer;
+    font-family: 'Spline Sans Mono', monospace; font-size: 12px; border: 1px solid var(--line);
+  }
+  .btn-go { background: var(--accent); color: #04130b; font-weight: 600; border: none; }
+  .btn-cancel { background: var(--panel-2); color: var(--muted); }
+  .modal small { color: var(--dim); font-size: 11px; display: block; margin-top: 10px; line-height: 1.5; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Equity Research · Disruptive Innovation · US Market</div>
+  <h1>Growth <em>Engines</em> Dashboard</h1>
+  <p class="sub">A GICS-organized map of sub-industries undergoing structural shifts — and the small-, mid-, and large-cap names positioned within them. Qualitative research scaffold, not a vetted buy list.</p>
+</header>
+
+<div class="disclaimer">
+  <strong>⚠ Read this before using.</strong> Every name, ticker, and label below is <strong>static placeholder data from the author's early-2026 knowledge</strong> and is likely stale, incomplete, or wrong. Some companies may have been delisted, acquired, reverse-split, or gone bankrupt since.
+  <ul>
+    <li>This is <strong>not investment advice</strong> and not a recommendation to buy anything.</li>
+    <li>No live prices or financials are shown unless <strong>you connect your own data API</strong> (button in the toolbar).</li>
+    <li>Small/mid-cap and "speculative" names carry high risk of <strong>total capital loss</strong>.</li>
+    <li>Verify every ticker, market cap, and business claim against primary sources (SEC filings, official GICS taxonomy, a live screener) before acting.</li>
+  </ul>
+</div>
+
+<div class="controls">
+  <div class="seg" id="geoFilter">
+    <button data-geo="US" class="on">US</button>
+    <button data-geo="Europe">EUROPE</button>
+    <button data-geo="India">INDIA</button>
+  </div>
+  <input class="search" id="search" placeholder="search ticker, company, sector, catalyst…">
+  <div class="seg" id="typeFilter">
+    <button data-type="all" class="on">ALL</button>
+    <button data-type="established">ESTABLISHED</button>
+    <button data-type="aggressive">AGGRESSIVE</button>
+    <button data-type="speculative">SPECULATIVE</button>
+  </div>
+  <button class="api-btn" id="apiBtn">◇ CONNECT LIVE DATA</button>
+  <button class="api-btn" id="expandBtn">⊕ EXPAND ALL</button>
+</div>
+
+<div class="stats" id="stats"></div>
+
+<main id="main"></main>
+
+<footer>
+  <div>BUILD: static research scaffold · DATA VINTAGE: ~early 2026 · CONFIDENCE: low on all specifics</div>
+  <div>Live quotes (optional) via Finnhub — get a free key at finnhub.io. Your key stays in your browser (sessionStorage) and is sent only to Finnhub's API.</div>
+  <div>Not financial advice. Verify independently. Built as a personal research organizer.</div>
+</footer>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>Connect live market data</h3>
+    <p>This dashboard ships with <strong>no live numbers</strong> on purpose — the author won't fabricate prices. To see real quotes, paste a free <strong>Finnhub.io</strong> API key. It's stored only in this browser session and used only to call Finnhub directly.</p>
+    <input id="apiKey" placeholder="Finnhub API key (e.g. abc123…)" autocomplete="off">
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modalCancel">Cancel</button>
+      <button class="btn-go" id="modalGo">Fetch quotes</button>
+    </div>
+    <small>Free tier ≈ 60 calls/min. Quotes are delayed/end-of-day depending on plan. This connects to a third party (Finnhub); review their terms. The author of this dashboard does not receive your key.</small>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+/* =========================================================================
+   DATA
+   Every entry is qualitative research from ~early 2026, LOW CONFIDENCE.
+   No prices/financials are hardcoded. `cap` is a rough bucket, verify it.
+   type: established | aggressive | speculative
+   ========================================================================= */
+const DATA = {
+  "US": [
+ { sector: "Information Technology", num: "IT", subs: [
+   { name: "AI Semiconductors & Accelerated Computing", shift: "Structural", stocks: [
+     { t:"NVDA", c:"NVIDIA", type:"established", cap:"Mega", catalyst:"Dominant GPU + CUDA platform for AI training and inference.", moat:"CUDA software ecosystem → very high switching costs.", risk:"Customer concentration; hyperscalers building in-house chips." },
+     { t:"AMD", c:"Advanced Micro Devices", type:"established", cap:"Large", catalyst:"#2 AI accelerator challenger plus data-center CPU share gains.", moat:"Chiplet architecture IP.", risk:"Far behind NVIDIA's software ecosystem." },
+     { t:"AVGO", c:"Broadcom", type:"established", cap:"Mega", catalyst:"Custom AI silicon (ASICs) for hyperscalers + networking.", moat:"Deep customer integration, IP breadth.", risk:"Lumpy, concentrated custom-chip revenue." },
+     { t:"ARM", c:"Arm Holdings", type:"aggressive", cap:"Large", catalyst:"Licensing model riding into AI/data-center CPUs.", moat:"Ubiquitous instruction-set IP.", risk:"Valuation runs ahead of royalty growth." },
+     { t:"ALAB", c:"Astera Labs", type:"aggressive", cap:"Mid", catalyst:"Connectivity silicon for AI data centers.", moat:"Specialized interconnect IP.", risk:"Valuation; customer concentration." },
+     { t:"CRDO", c:"Credo Technology", type:"speculative", cap:"Mid/Small", catalyst:"AI data-center connectivity (active electrical cables).", moat:"Niche IP.", risk:"Customer concentration; lumpy demand." },
+     { t:"AEHR", c:"Aehr Test Systems", type:"speculative", cap:"Small", catalyst:"Semiconductor test for EV/AI silicon.", moat:"Niche test equipment.", risk:"Very lumpy orders; small base." },
+   ]},
+   { name: "AI Software & Data Infrastructure", shift: "Structural", stocks: [
+     { t:"PLTR", c:"Palantir", type:"aggressive", cap:"Large", catalyst:"Enterprise & government AI deployment platform.", moat:"Sticky contracts, proprietary ontology.", risk:"Extreme valuation; lumpy contract timing." },
+     { t:"SNOW", c:"Snowflake", type:"aggressive", cap:"Large", catalyst:"Data gravity as AI workloads scale.", moat:"High switching costs once data resides on-platform.", risk:"Consumption revenue sensitive to IT spend." },
+     { t:"DDOG", c:"Datadog", type:"aggressive", cap:"Large", catalyst:"Observability across cloud/AI workloads.", moat:"Sticky multi-product platform.", risk:"Usage-based revenue cyclicality." },
+     { t:"APP", c:"AppLovin", type:"aggressive", cap:"Large", catalyst:"AI-driven mobile ad engine.", moat:"Data scale + algorithms.", risk:"Ad-market cyclicality; concentration." },
+     { t:"TEM", c:"Tempus AI", type:"speculative", cap:"Mid", catalyst:"AI + clinical/molecular data.", moat:"Proprietary medical dataset.", risk:"Profitability unproven." },
+     { t:"SOUN", c:"SoundHound AI", type:"speculative", cap:"Small", catalyst:"Conversational/voice AI platform.", moat:"Partnerships (early).", risk:"Tiny revenue; dilution risk." },
+     { t:"BBAI", c:"BigBear.ai", type:"speculative", cap:"Small", catalyst:"AI analytics for defense/gov.", moat:"Government relationships.", risk:"Weak balance sheet; dilution." },
+   ]},
+   { name: "Cybersecurity", shift: "Steady-growth", stocks: [
+     { t:"CRWD", c:"CrowdStrike", type:"established", cap:"Large", catalyst:"Cloud-native endpoint + platform consolidation.", moat:"Single-agent platform, switching costs.", risk:"Valuation; competition." },
+     { t:"ZS", c:"Zscaler", type:"aggressive", cap:"Large", catalyst:"Zero-trust network access secular shift.", moat:"Cloud security fabric.", risk:"Competition; macro IT spend." },
+     { t:"S", c:"SentinelOne", type:"aggressive", cap:"Mid", catalyst:"AI-driven endpoint security.", moat:"Autonomous detection tech.", risk:"Intense competition vs CRWD." },
+     { t:"RBRK", c:"Rubrik", type:"speculative", cap:"Mid", catalyst:"Data security & cyber-recovery.", moat:"Backup-to-security expansion.", risk:"Profitability." },
+   ]},
+   { name: "Quantum Computing", shift: "Frontier / lottery-ticket", stocks: [
+     { t:"IONQ", c:"IonQ", type:"speculative", cap:"Mid/Small", catalyst:"Trapped-ion quantum hardware.", moat:"Frontier IP (unproven economics).", risk:"Near-zero revenue; binary outcome." },
+     { t:"RGTI", c:"Rigetti Computing", type:"speculative", cap:"Small", catalyst:"Superconducting quantum systems.", moat:"Fabrication know-how.", risk:"Cash burn; commercialization far off." },
+     { t:"QBTS", c:"D-Wave Quantum", type:"speculative", cap:"Small", catalyst:"Quantum annealing for optimization.", moat:"Annealing niche.", risk:"Unproven demand; dilution." },
+   ]},
+ ]},
+
+ { sector: "Health Care", num: "HC", subs: [
+   { name: "GLP-1 / Metabolic Drugs", shift: "Structural", stocks: [
+     { t:"LLY", c:"Eli Lilly", type:"established", cap:"Mega", catalyst:"GLP-1 franchise expanding into obesity, apnea & beyond.", moat:"Patent-protected molecules + manufacturing scale.", risk:"Patent cliffs; pricing/reimbursement pressure." },
+     { t:"VKTX", c:"Viking Therapeutics", type:"speculative", cap:"Mid", catalyst:"Next-gen metabolic drug candidates.", moat:"Clinical-stage IP (early).", risk:"Binary clinical/FDA outcomes." },
+     { t:"GPCR", c:"Structure Therapeutics", type:"speculative", cap:"Mid/Small", catalyst:"Oral small-molecule GLP-1 candidate.", moat:"Chemistry platform.", risk:"Clinical risk; competition." },
+     { t:"TERN", c:"Terns Pharmaceuticals", type:"speculative", cap:"Small", catalyst:"Early metabolic/oncology pipeline.", moat:"Pipeline IP (early).", risk:"High clinical failure probability." },
+   ]},
+   { name: "Gene Editing & Cell Therapy", shift: "Structural", stocks: [
+     { t:"CRSP", c:"CRISPR Therapeutics", type:"speculative", cap:"Mid", catalyst:"Approved/pipeline gene-editing therapies.", moat:"Foundational CRISPR IP.", risk:"Manufacturing, reimbursement, clinical risk." },
+     { t:"NTLA", c:"Intellia Therapeutics", type:"speculative", cap:"Mid", catalyst:"In-vivo gene editing pipeline.", moat:"Delivery + editing IP.", risk:"Clinical/regulatory binary risk." },
+     { t:"BEAM", c:"Beam Therapeutics", type:"speculative", cap:"Mid/Small", catalyst:"Base-editing platform.", moat:"Differentiated editing tech.", risk:"Early-stage; cash burn." },
+   ]},
+   { name: "MedTech & Diagnostics", shift: "Steady-growth", stocks: [
+     { t:"ISRG", c:"Intuitive Surgical", type:"established", cap:"Large", catalyst:"Robotic surgery installed base + recurring instruments.", moat:"Razor-and-blade model, switching costs.", risk:"Valuation; new robotic competitors." },
+     { t:"INSP", c:"Inspire Medical", type:"aggressive", cap:"Mid", catalyst:"Sleep-apnea neurostimulation implant.", moat:"IP + clinician training.", risk:"GLP-1 substitution; competition." },
+     { t:"TMDX", c:"TransMedics", type:"speculative", cap:"Mid", catalyst:"Organ-transplant perfusion systems + logistics.", moat:"Integrated network.", risk:"High valuation; execution." },
+     { t:"NTRA", c:"Natera", type:"aggressive", cap:"Mid", catalyst:"Genetic testing (oncology MRD, prenatal).", moat:"Test menu + data.", risk:"Reimbursement; litigation." },
+   ]},
+   { name: "AI Drug Discovery", shift: "Frontier", stocks: [
+     { t:"RXRX", c:"Recursion Pharmaceuticals", type:"speculative", cap:"Mid/Small", catalyst:"AI-driven drug discovery platform.", moat:"Proprietary biology dataset.", risk:"Unproven clinical output." },
+   ]},
+ ]},
+
+ { sector: "Consumer Discretionary", num: "CD", subs: [
+   { name: "EV / Autonomous Mobility", shift: "Structural", stocks: [
+     { t:"TSLA", c:"Tesla", type:"established", cap:"Mega", catalyst:"Optionality across autonomy, energy & robotics.", moat:"Brand, charging network, data scale.", risk:"Valuation prices unproven robotaxi/robotics." },
+     { t:"RIVN", c:"Rivian", type:"aggressive", cap:"Mid", catalyst:"Premium EV + commercial van platform.", moat:"Vertical integration, brand.", risk:"Cash burn; profitability unproven." },
+     { t:"AUR", c:"Aurora Innovation", type:"speculative", cap:"Mid", catalyst:"Autonomous trucking commercialization.", moat:"Self-driving stack + partners.", risk:"Pre-scale revenue; capital intensive." },
+     { t:"LAZR", c:"Luminar", type:"speculative", cap:"Small", catalyst:"Automotive lidar adoption.", moat:"Sensor IP.", risk:"Dilution; uncertain adoption." },
+   ]},
+   { name: "E-commerce & Consumer Tech", shift: "Steady-growth", stocks: [
+     { t:"SHOP", c:"Shopify", type:"established", cap:"Large", catalyst:"Merchant operating system + payments.", moat:"Ecosystem lock-in.", risk:"Consumer-spend cyclicality; valuation." },
+     { t:"DUOL", c:"Duolingo", type:"aggressive", cap:"Mid", catalyst:"Gamified learning + AI features.", moat:"Engagement loop, brand.", risk:"Valuation; engagement saturation." },
+     { t:"CVNA", c:"Carvana", type:"speculative", cap:"Mid", catalyst:"Online used-car platform.", moat:"Logistics/reconditioning scale.", risk:"Leverage; cyclicality." },
+     { t:"ONON", c:"On Holding", type:"aggressive", cap:"Mid", catalyst:"Premium performance footwear brand.", moat:"Brand momentum.", risk:"Fashion-cycle/demand risk." },
+   ]},
+ ]},
+
+ { sector: "Communication Services", num: "CS", subs: [
+   { name: "AI-Driven Platforms & Advertising", shift: "Structural", stocks: [
+     { t:"GOOGL", c:"Alphabet", type:"established", cap:"Mega", catalyst:"AI across Search, Cloud; Waymo optionality.", moat:"Data, distribution, network effects.", risk:"Antitrust; AI disrupting core Search." },
+     { t:"META", c:"Meta Platforms", type:"established", cap:"Mega", catalyst:"AI-optimized ad engine + infrastructure.", moat:"Network effects across billions of users.", risk:"Heavy capex with uncertain return." },
+     { t:"RDDT", c:"Reddit", type:"speculative", cap:"Mid", catalyst:"Social platform + data-licensing for AI.", moat:"Unique community data.", risk:"Monetization unproven; volatility." },
+   ]},
+   { name: "Streaming, Gaming & Connected TV", shift: "Steady-growth", stocks: [
+     { t:"NFLX", c:"Netflix", type:"established", cap:"Large", catalyst:"Ad tier + global subscriber growth.", moat:"Content library + scale.", risk:"Content-cost inflation; saturation." },
+     { t:"RBLX", c:"Roblox", type:"aggressive", cap:"Mid", catalyst:"UGC gaming platform + advertising.", moat:"Creator network effects.", risk:"Profitability; youth-safety regulation." },
+     { t:"ROKU", c:"Roku", type:"aggressive", cap:"Mid", catalyst:"Connected-TV operating system + ads.", moat:"Installed-base scale.", risk:"Ad cyclicality; competition." },
+   ]},
+ ]},
+
+ { sector: "Financials", num: "FIN", subs: [
+   { name: "Payments Networks", shift: "Steady-growth", stocks: [
+     { t:"V", c:"Visa", type:"established", cap:"Mega", catalyst:"Secular cash-to-digital shift.", moat:"Two-sided network effect (very strong).", risk:"Regulatory fee pressure; disintermediation." },
+     { t:"MA", c:"Mastercard", type:"established", cap:"Mega", catalyst:"Global digital-payments growth + services.", moat:"Network effect.", risk:"Regulation; new rails." },
+   ]},
+   { name: "Fintech & Digital Banking", shift: "Structural", stocks: [
+     { t:"SOFI", c:"SoFi Technologies", type:"aggressive", cap:"Mid", catalyst:"Integrated digital bank ecosystem.", moat:"Cross-product engagement.", risk:"Credit-cycle exposure." },
+     { t:"AFRM", c:"Affirm", type:"speculative", cap:"Mid", catalyst:"Buy-now-pay-later scale + partners.", moat:"Underwriting data + merchant network.", risk:"Credit + rate sensitivity." },
+     { t:"TOST", c:"Toast", type:"aggressive", cap:"Mid", catalyst:"Restaurant fintech/operating platform.", moat:"Vertical software + payments.", risk:"Single-vertical concentration." },
+     { t:"LMND", c:"Lemonade", type:"speculative", cap:"Small", catalyst:"AI-driven insurance.", moat:"Tech-first model.", risk:"Loss ratios unproven; profitability." },
+   ]},
+ ]},
+
+ { sector: "Industrials", num: "IND", subs: [
+   { name: "Automation & Robotics", shift: "Structural", stocks: [
+     { t:"SYM", c:"Symbotic", type:"aggressive", cap:"Mid", catalyst:"AI warehouse-automation systems.", moat:"Proprietary systems + Walmart relationship.", risk:"Customer concentration; execution." },
+     { t:"AXON", c:"Axon Enterprise", type:"established", cap:"Large", catalyst:"Tasers + cloud evidence ecosystem.", moat:"Switching costs, recurring software.", risk:"Valuation." },
+   ]},
+   { name: "Aerospace, Defense & Drones", shift: "Structural", stocks: [
+     { t:"GE", c:"GE Aerospace", type:"established", cap:"Large", catalyst:"Engine aftermarket recurring revenue.", moat:"Installed base, IP.", risk:"Aviation cyclicality; supply chain." },
+     { t:"KTOS", c:"Kratos Defense", type:"speculative", cap:"Mid/Small", catalyst:"Unmanned systems / drones for defense.", moat:"Low-cost drone niche.", risk:"Lumpy contracts; budget dependence." },
+     { t:"AVAV", c:"AeroVironment", type:"aggressive", cap:"Mid", catalyst:"Tactical drones & loitering munitions.", moat:"Established defense relationships.", risk:"Budget cycle dependence." },
+     { t:"ACHR", c:"Archer Aviation", type:"speculative", cap:"Mid/Small", catalyst:"eVTOL air-taxi commercialization.", moat:"Certification progress (if achieved).", risk:"Pre-commercial; regulatory; cash burn." },
+     { t:"JOBY", c:"Joby Aviation", type:"speculative", cap:"Mid", catalyst:"eVTOL air-taxi network.", moat:"Certification lead (if held).", risk:"Pre-revenue; heavy dilution." },
+   ]},
+   { name: "Electrification & Power Equipment", shift: "Structural", stocks: [
+     { t:"ETN", c:"Eaton", type:"established", cap:"Large", catalyst:"Electrification + data-center power demand.", moat:"Scale, installed base.", risk:"Cyclicality." },
+     { t:"GEV", c:"GE Vernova", type:"aggressive", cap:"Large", catalyst:"Grid + power generation for load growth.", moat:"Installed base, scale.", risk:"Execution; project risk." },
+     { t:"BE", c:"Bloom Energy", type:"speculative", cap:"Mid/Small", catalyst:"Fuel cells for data-center/clean power.", moat:"Fuel-cell tech.", risk:"Profitability; subsidy dependence." },
+   ]},
+ ]},
+
+ { sector: "Energy", num: "ENE", subs: [
+   { name: "Solar & Clean Energy", shift: "Policy-driven", stocks: [
+     { t:"FSLR", c:"First Solar", type:"established", cap:"Mid/Large", catalyst:"US-made thin-film solar + policy tailwinds.", moat:"Proprietary tech, domestic manufacturing.", risk:"Subsidy/policy reversal." },
+     { t:"ENPH", c:"Enphase Energy", type:"aggressive", cap:"Mid", catalyst:"Solar microinverters + storage.", moat:"Tech + installer network.", risk:"Demand collapse; rate sensitivity." },
+     { t:"ARRY", c:"Array Technologies", type:"speculative", cap:"Small", catalyst:"Utility-scale solar trackers.", moat:"Niche hardware.", risk:"Cyclicality; margins." },
+   ]},
+   { name: "LNG & Next-Gen Nuclear", shift: "Structural", stocks: [
+     { t:"LNG", c:"Cheniere Energy", type:"established", cap:"Large", catalyst:"US LNG export demand.", moat:"Infrastructure scale.", risk:"Commodity & regulatory exposure." },
+     { t:"SMR", c:"NuScale Power", type:"speculative", cap:"Small", catalyst:"Small modular reactor commercialization.", moat:"Design certification (early).", risk:"Far-out timeline; funding." },
+   ]},
+ ]},
+
+ { sector: "Utilities", num: "UTL", subs: [
+   { name: "Power for AI Data Centers", shift: "Structural", stocks: [
+     { t:"CEG", c:"Constellation Energy", type:"established", cap:"Large", catalyst:"Nuclear capacity meeting data-center demand.", moat:"Irreplaceable generation assets.", risk:"Power-price & regulatory exposure." },
+     { t:"VST", c:"Vistra", type:"established", cap:"Large", catalyst:"Generation + storage serving load growth.", moat:"Asset base.", risk:"Commodity exposure." },
+     { t:"TLN", c:"Talen Energy", type:"speculative", cap:"Mid", catalyst:"Generation tied to data-center co-location.", moat:"Strategic assets.", risk:"Commodity/contract concentration." },
+     { t:"NEE", c:"NextEra Energy", type:"established", cap:"Mega", catalyst:"Largest renewables developer.", moat:"Scale, project pipeline.", risk:"Rate sensitivity; policy." },
+   ]},
+ ]},
+
+ { sector: "Materials", num: "MAT", subs: [
+   { name: "Battery & Critical Minerals", shift: "Commodity-cyclical", stocks: [
+     { t:"MP", c:"MP Materials", type:"aggressive", cap:"Mid", catalyst:"US rare-earth supply-chain independence.", moat:"Only scaled US rare-earth mine.", risk:"Price volatility; China competition." },
+     { t:"ALB", c:"Albemarle", type:"established", cap:"Mid/Large", catalyst:"Lithium for EV/storage.", moat:"Low-cost resource access.", risk:"Lithium-price collapse risk (acute)." },
+     { t:"FCX", c:"Freeport-McMoRan", type:"established", cap:"Large", catalyst:"Copper demand from electrification.", moat:"Tier-1 copper assets.", risk:"Commodity cycle." },
+   ]},
+ ]},
+
+ { sector: "Real Estate", num: "RE", subs: [
+   { name: "Data-Center & Infrastructure REITs", shift: "Structural", stocks: [
+     { t:"EQIX", c:"Equinix", type:"established", cap:"Large", catalyst:"Interconnection demand from cloud/AI.", moat:"Network-dense facilities, switching costs.", risk:"Capex intensity; rates." },
+     { t:"DLR", c:"Digital Realty", type:"established", cap:"Large", catalyst:"Hyperscale data-center demand.", moat:"Scale, land bank.", risk:"Supply growth; rate sensitivity." },
+     { t:"IRM", c:"Iron Mountain", type:"aggressive", cap:"Mid/Large", catalyst:"Storage + data-center pivot.", moat:"Sticky records business.", risk:"Leverage." },
+   ]},
+ ]},
+
+ { sector: "Consumer Staples", num: "CST", subs: [
+   { name: "High-Growth Brands (the weak-growth sector)", shift: "Niche", stocks: [
+     { t:"COST", c:"Costco Wholesale", type:"established", cap:"Mega", catalyst:"Membership-model compounding.", moat:"Scale + membership loyalty.", risk:"Rich valuation for a staple." },
+     { t:"CELH", c:"Celsius Holdings", type:"aggressive", cap:"Mid", catalyst:"Energy-drink share gains.", moat:"Brand + distribution deal.", risk:"Competition; distribution dependence." },
+     { t:"ELF", c:"e.l.f. Beauty", type:"aggressive", cap:"Mid", catalyst:"Fast-growing value cosmetics.", moat:"Brand + speed to market.", risk:"Valuation; trend dependence." },
+     { t:"BRBR", c:"BellRing Brands", type:"aggressive", cap:"Mid", catalyst:"Protein/nutrition (GLP-1-adjacent demand).", moat:"Brand (Premier Protein).", risk:"Narrow portfolio." },
+   ]},
+ ]},
+
+ { sector: "Blockchain & Web3", num: "WEB3", subs: [
+    { name: "Infrastructure & Exchanges", shift: "Structural", stocks: [
+      { t:"COIN", c:"Coinbase", type:"established", cap:"Large", catalyst:"Institutional crypto adoption + Layer 2 growth.", moat:"Regulatory moat + retail brand.", risk:"Regulatory overhang; volume cyclicality." },
+      { t:"MSTR", c:"MicroStrategy", type:"aggressive", cap:"Large", catalyst:"Bitcoin treasury strategy + software cashflow.", moat:"First-mover BTC corporate treasury.", risk:"Extreme correlation to Bitcoin price." },
+      { t:"HOOD", c:"Robinhood", type:"aggressive", cap:"Mid", catalyst:"Retail brokerage + crypto + new products.", moat:"Brand with younger investors.", risk:"Revenue tied to trading/crypto activity." },
+      { t:"SQ", c:"Block", type:"aggressive", cap:"Large", catalyst:"Cash App bitcoin integration + seller ecosystem.", moat:"Closed-loop ecosystem.", risk:"Consumer spending sensitivity." }
+    ]},
+    { name: "Mining & Compute", shift: "Commodity-cyclical", stocks: [
+      { t:"MARA", c:"MARA Holdings", type:"speculative", cap:"Mid", catalyst:"Bitcoin mining scale + AI compute pivot.", moat:"Hashrate scale.", risk:"Halving economics; extreme volatility." },
+      { t:"RIOT", c:"Riot Platforms", type:"speculative", cap:"Mid", catalyst:"Low-cost power agreements + fleet expansion.", moat:"Self-mining scale.", risk:"BTC price dependence." }
+    ]}
+  ]},
+
+  { sector: "Space Economy", num: "SPC", subs: [
+    { name: "Launch & Manufacturing", shift: "Frontier", stocks: [
+      { t:"RKLB", c:"Rocket Lab", type:"aggressive", cap:"Mid", catalyst:"Neutron rocket launch + space systems growth.", moat:"End-to-end space manufacturer.", risk:"Execution risk on heavy launch." },
+      { t:"ASTS", c:"AST SpaceMobile", type:"speculative", cap:"Mid", catalyst:"Direct-to-cell satellite broadband.", moat:"IP + telecom partnerships.", risk:"Unproven constellation scale; funding." },
+      { t:"LUNR", c:"Intuitive Machines", type:"speculative", cap:"Small", catalyst:"Lunar exploration & payload delivery.", moat:"NASA contracts.", risk:"Binary mission success risk." }
+    ]}
+  ]}
+],
+
+  "Europe": [
+    { sector: "Information Technology", num: "IT", subs: [
+      { name: "Semiconductor Equipment", shift: "Structural", stocks: [
+        { t:"ASML.AS", c:"ASML Holding", type:"established", cap:"Mega", catalyst:"EUV lithography monopoly for advanced chips.", moat:"Extreme technological complexity.", risk:"Geopolitics; China export bans." },
+        { t:"ASM.AS", c:"ASM International", type:"aggressive", cap:"Large", catalyst:"ALD technology for atomic-level deposition.", moat:"Niche leadership.", risk:"Cyclicality." }
+      ]}
+    ]},
+    { sector: "Health Care", num: "HC", subs: [
+      { name: "Metabolic Drugs", shift: "Structural", stocks: [
+        { t:"NOVO-B.CO", c:"Novo Nordisk", type:"established", cap:"Mega", catalyst:"Wegovy/Ozempic global rollout.", moat:"Scale, manufacturing capacity.", risk:"Competition from Lilly." }
+      ]}
+    ]},
+    { sector: "Consumer Discretionary", num: "CD", subs: [
+      { name: "Luxury Goods", shift: "Steady-growth", stocks: [
+        { t:"MC.PA", c:"LVMH", type:"established", cap:"Mega", catalyst:"Emerging market middle-class growth.", moat:"Heritage brands (Louis Vuitton, Dior).", risk:"China consumer slowdown." },
+        { t:"RMS.PA", c:"Hermès", type:"established", cap:"Large", catalyst:"Extreme pricing power and scarcity.", moat:"Veblen good status.", risk:"Valuation." }
+      ]}
+    ]}
+  ],
+
+  "India": [
+    { sector: "Financials", num: "FIN", subs: [
+      { name: "Private Banks & NBFCs", shift: "Structural", stocks: [
+        { t:"HDFCBANK.NS", c:"HDFC Bank", type:"established", cap:"Mega", catalyst:"Financialization of Indian savings.", moat:"Scale, low-cost deposit base.", risk:"Integration friction post-merger." },
+        { t:"BAJFINANCE.NS", c:"Bajaj Finance", type:"aggressive", cap:"Large", catalyst:"Consumer credit penetration.", moat:"Data analytics, underwriting.", risk:"Cost of funds, asset quality." }
+      ]}
+    ]},
+    { sector: "Information Technology", num: "IT", subs: [
+      { name: "IT Services", shift: "Steady-growth", stocks: [
+        { t:"TCS.NS", c:"Tata Consultancy", type:"established", cap:"Mega", catalyst:"Global enterprise cloud migration.", moat:"Execution scale.", risk:"US/Europe macro slowdown." },
+        { t:"INFY.NS", c:"Infosys", type:"established", cap:"Large", catalyst:"Cost optimization megadeals.", moat:"Global delivery model.", risk:"Margin pressure." }
+      ]}
+    ]},
+    { sector: "Energy & Conglomerates", num: "ENE", subs: [
+      { name: "Retail & Telecom Transition", shift: "Structural", stocks: [
+        { t:"RELIANCE.NS", c:"Reliance Ind.", type:"established", cap:"Mega", catalyst:"Jio monetization + retail dominance.", moat:"Unmatched capital scale.", risk:"Heavy debt, core refining cyclicality." }
+      ]}
+    ]},
+    { sector: "Consumer Discretionary", num: "CD", subs: [
+      { name: "Auto & EV", shift: "Structural", stocks: [
+        { t:"TATAMOTORS.NS", c:"Tata Motors", type:"aggressive", cap:"Large", catalyst:"India EV leadership + JLR turnaround.", moat:"Early EV platform lead.", risk:"Cyclicality, competition." }
+      ]}
+    ]}
+  ]
+};
+
+/* =========================  RENDER  ========================= */
+const main = document.getElementById('main');
+let activeGeo = 'US';
+let activeType = 'all';
+let query = '';
+
+function render() {
+  main.innerHTML = '';
+  let totalStocks = 0, shown = 0;
+  const q = query.trim().toLowerCase();
+  
+  const currentData = DATA[activeGeo];
+
+  currentData.forEach((sec, si) => {
+    const secEl = document.createElement('section');
+    secEl.className = 'sector' + (si === 0 ? ' open' : '');
+
+    let secStockCount = 0;
+    const subsHtml = sec.subs.map(sub => {
+      const cards = sub.stocks.filter(st => {
+        totalStocks++;
+        const matchType = activeType === 'all' || st.type === activeType;
+        const hay = (st.t + ' ' + st.c + ' ' + sec.sector + ' ' + sub.name + ' ' + st.catalyst + ' ' + st.moat + ' ' + st.risk).toLowerCase();
+        const matchQ = !q || hay.includes(q);
+        return matchType && matchQ;
+      });
+      secStockCount += cards.length;
+      shown += cards.length;
+      if (!cards.length) return '';
+      return `
+        <div class="subind">
+          <div class="subind-name">${sub.name} <span class="tag-shift">${sub.shift}</span></div>
+          <div class="grid">
+            ${cards.map(st => cardHtml(st)).join('')}
+          </div>
+        </div>`;
+    }).join('');
+
+    if (!secStockCount) return;
+
+    secEl.innerHTML = `
+      <div class="sector-head">
+        <span class="sector-num">${sec.num}</span>
+        <span class="sector-title">${sec.sector}</span>
+        <span class="sector-count">${secStockCount} names</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="sector-body">${subsHtml}</div>`;
+
+    secEl.querySelector('.sector-head').addEventListener('click', () => secEl.classList.toggle('open'));
+    main.appendChild(secEl);
+  });
+
+  if (!shown) {
+    main.innerHTML = `<p style="padding:40px;color:var(--dim);font-family:'Spline Sans Mono',monospace;">No matches for "${query}" under filter "${activeType}".</p>`;
+  }
+  renderStats();
+}
+
+function cardHtml(st) {
+  const colorMap = { established:'var(--established)', aggressive:'var(--aggressive)', speculative:'var(--speculative)' };
+  return `
+    <div class="card" data-ticker="${st.t}" style="--type-color:${colorMap[st.type]}">
+      <div class="card-top">
+        <div>
+          <div class="ticker">${st.t}</div>
+          <div class="company">${st.c}</div>
+        </div>
+        <div class="badges">
+          <span class="badge ${st.type}">${st.type}</span>
+          <span class="badge cap">${st.cap} cap</span>
+        </div>
+      </div>
+      <div class="live-quote" data-quote="${st.t}">live quote — connect API</div>
+      <div class="field catalyst">
+        <div class="field-label"><span class="dot catalyst"></span>Future Catalyst</div>
+        <div class="field-text">${st.catalyst}</div>
+      </div>
+      <div class="field moat">
+        <div class="field-label"><span class="dot moat"></span>Competitive Moat</div>
+        <div class="field-text">${st.moat}</div>
+      </div>
+      <div class="field risk">
+        <div class="field-label"><span class="dot risk"></span>Risk Factor</div>
+        <div class="field-text">${st.risk}</div>
+      </div>
+      <div class="card-details" id="details-${st.t}"></div>
+    </div>`;
+}
+
+function renderStats() {
+  const currentData = DATA[activeGeo];
+  const all = currentData.flatMap(s => s.subs.flatMap(su => su.stocks));
+  const byType = t => all.filter(s => s.type === t).length;
+  const stats = [
+    [currentData.length, 'Sectors'],
+    [currentData.reduce((a,s)=>a+s.subs.length,0), 'Sub-Industries'],
+    [all.length, 'Total Names'],
+    [byType('established'), 'Established'],
+    [byType('aggressive'), 'Aggressive'],
+    [byType('speculative'), 'Speculative'],
+  ];
+  document.getElementById('stats').innerHTML = stats.map(([n,l]) =>
+    `<div class="stat"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
+}
+
+/* =========================  CONTROLS  ========================= */
+document.getElementById('search').addEventListener('input', e => { query = e.target.value; render(); });
+
+document.querySelectorAll('#geoFilter button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#geoFilter button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    activeGeo = b.dataset.geo;
+    render();
+    const autoKey = (typeof FINNHUB_API_KEY !== 'undefined' && FINNHUB_API_KEY.trim() !== '') ? FINNHUB_API_KEY : localStorage.getItem('finnhubKey');
+    if (autoKey) fetchAllQuotes(autoKey);
+  });
+});
+
+document.querySelectorAll('#typeFilter button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#typeFilter button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    activeType = b.dataset.type;
+    render();
+  });
+});
+let allExpanded = false;
+document.getElementById('expandBtn').addEventListener('click', () => {
+  allExpanded = !allExpanded;
+  document.querySelectorAll('.sector').forEach(s => s.classList.toggle('open', allExpanded));
+  document.getElementById('expandBtn').textContent = allExpanded ? '⊖ COLLAPSE ALL' : '⊕ EXPAND ALL';
+});
+
+/* =========================  LIVE DATA (optional, user's own key)  ========================= */
+const modalBg = document.getElementById('modalBg');
+document.getElementById('apiBtn').addEventListener('click', () => {
+  const fileKey = (typeof FINNHUB_API_KEY !== 'undefined' && FINNHUB_API_KEY.trim() !== '') ? FINNHUB_API_KEY : '';
+  document.getElementById('apiKey').value = fileKey || localStorage.getItem('finnhubKey') || '';
+  modalBg.classList.add('show');
+});
+document.getElementById('modalCancel').addEventListener('click', () => modalBg.classList.remove('show'));
+modalBg.addEventListener('click', e => { if (e.target === modalBg) modalBg.classList.remove('show'); });
+
+document.getElementById('modalGo').addEventListener('click', async () => {
+  const key = document.getElementById('apiKey').value.trim();
+  if (!key) return;
+  localStorage.setItem('finnhubKey', key);
+  modalBg.classList.remove('show');
+  fetchAllQuotes(key);
+});
+
+async function fetchAllQuotes(key) {
+  const currentData = DATA[activeGeo];
+  const tickers = [...new Set(currentData.flatMap(s => s.subs.flatMap(su => su.stocks.map(x => x.t))))];
+  for (const t of tickers) {
+    try {
+      const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(t)}&token=${encodeURIComponent(key)}`);
+      const d = await r.json();
+      updateQuote(t, d);
+      await new Promise(res => setTimeout(res, 1100)); // respect ~60/min free tier
+    } catch (e) {
+      updateQuote(t, null);
+    }
+  }
+}
+
+function updateQuote(ticker, d) {
+  document.querySelectorAll(`[data-quote="${ticker}"]`).forEach(el => {
+    if (!d || typeof d.c !== 'number' || d.c === 0) {
+      el.innerHTML = `<div class="lq-top"><span>${ticker}</span><span style="color:var(--danger)">no data</span></div>`;
+      return;
+    }
+    const chg = d.dp;
+    const cls = chg >= 0 ? 'up' : 'down';
+    const arrow = chg >= 0 ? '▲' : '▼';
+    
+    let rangeHtml = '';
+    if (d.h && d.l && d.h > d.l) {
+      const range = d.h - d.l;
+      const pos = ((d.c - d.l) / range) * 100;
+      rangeHtml = `
+        <div class="day-range" title="Day Range: $${d.l.toFixed(2)} - $${d.h.toFixed(2)}">
+          <div class="dr-low">L</div>
+          <div class="dr-bar"><div class="dr-indicator" style="left: ${Math.min(Math.max(pos, 0), 100)}%"></div></div>
+          <div class="dr-high">H</div>
+        </div>
+      `;
+    }
+
+    el.innerHTML = `
+      <div class="lq-top">
+        <span class="price">$${d.c.toFixed(2)}</span>
+        <span class="${cls}">${arrow} ${chg != null ? chg.toFixed(2) : '—'}%</span>
+      </div>
+      ${rangeHtml}
+    `;
+  });
+}
+
+main.addEventListener('click', async (e) => {
+  const card = e.target.closest('.card');
+  if (!card) return;
+  const ticker = card.dataset.ticker;
+  const detailsEl = document.getElementById(`details-${ticker}`);
+  if (!detailsEl) return;
+
+  if (card.classList.contains('expanded')) {
+    card.classList.remove('expanded');
+    return;
+  }
+
+  card.classList.add('expanded');
+  
+  if (detailsEl.innerHTML !== '') return;
+
+  const fileKey = (typeof FINNHUB_API_KEY !== 'undefined' && FINNHUB_API_KEY.trim() !== '') ? FINNHUB_API_KEY : null;
+  const key = fileKey || localStorage.getItem('finnhubKey');
+  
+  if (!key) {
+    detailsEl.innerHTML = `<div class="details-error">Connect API key to see deep metrics.</div>`;
+    return;
+  }
+
+  detailsEl.innerHTML = `<div class="details-loading">Loading metrics...</div>`;
+
+  try {
+    const [metRes, canRes] = await Promise.all([
+      fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${encodeURIComponent(ticker)}&metric=all&token=${encodeURIComponent(key)}`),
+      (async () => {
+        const to = Math.floor(Date.now() / 1000);
+        const from = to - (30 * 24 * 60 * 60);
+        return fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${encodeURIComponent(ticker)}&resolution=D&from=${from}&to=${to}&token=${encodeURIComponent(key)}`);
+      })()
+    ]);
+    
+    const metData = await metRes.json();
+    const canData = await canRes.json();
+
+    renderDetails(detailsEl, ticker, metData, canData);
+  } catch (err) {
+    detailsEl.innerHTML = `<div class="details-error">Failed to load data. API error.</div>`;
+  }
+});
+
+function renderDetails(el, ticker, metData, canData) {
+  const m = metData.metric || {};
+  const pe = m.peNormalizedAnnual ? m.peNormalizedAnnual.toFixed(1) : 'N/A';
+  const mktCap = m.marketCapitalization ? '$' + (m.marketCapitalization / 1000).toFixed(1) + 'B' : 'N/A';
+  const week52High = m['52WeekHigh'] ? '$' + m['52WeekHigh'].toFixed(2) : 'N/A';
+  const week52Low = m['52WeekLow'] ? '$' + m['52WeekLow'].toFixed(2) : 'N/A';
+  
+  let svg = '';
+  if (canData && canData.s === 'ok' && canData.c && canData.c.length > 0) {
+    const prices = canData.c;
+    const minP = Math.min(...prices);
+    const maxP = Math.max(...prices);
+    const range = maxP - minP || 1;
+    const w = 280;
+    const h = 35;
+    const pts = prices.map((p, i) => {
+      const x = (i / (prices.length - 1)) * w;
+      const y = h - ((p - minP) / range) * h;
+      return `${x},${y}`;
+    }).join(' ');
+    
+    const color = prices[prices.length - 1] >= prices[0] ? 'var(--accent)' : 'var(--danger)';
+    
+    svg = `
+      <div class="sparkline-container">
+        <div class="sparkline-title">30-Day Price Trend</div>
+        <svg viewBox="-5 -5 290 45" class="sparkline">
+          <polyline fill="none" stroke="${color}" stroke-width="2" points="${pts}" />
+        </svg>
+      </div>
+    `;
+  }
+
+  el.innerHTML = `
+    <div class="metrics-grid">
+      <div class="metric-item"><span>Mkt Cap</span><strong>${mktCap}</strong></div>
+      <div class="metric-item"><span>P/E (Ann)</span><strong>${pe}</strong></div>
+      <div class="metric-item"><span>52W High</span><strong>${week52High}</strong></div>
+      <div class="metric-item"><span>52W Low</span><strong>${week52Low}</strong></div>
+    </div>
+    ${svg}
+  `;
+}
+
+/* boot */
+render();
+const autoKey = (typeof FINNHUB_API_KEY !== 'undefined' && FINNHUB_API_KEY.trim() !== '') ? FINNHUB_API_KEY : localStorage.getItem('finnhubKey');
+if (autoKey) {
+  fetchAllQuotes(autoKey);
+}
+</script>
+</body>
+</html>

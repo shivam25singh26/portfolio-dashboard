@@ -1,0 +1,18 @@
+
+> dashboard@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.0.251:3001
+- Environments: .env.local
+✓ Ready in 192ms
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:3000
+- PID:          17593
+- Dir:          /Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/dashboard
+- Log:          .next/dev/logs/next-development.log
+
+Run kill 17593 to stop it.
+[?25h
