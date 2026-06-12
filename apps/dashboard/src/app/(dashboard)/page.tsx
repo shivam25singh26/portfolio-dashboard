@@ -330,8 +330,9 @@ export default function DashboardOverview() {
       </div>
 
       <div className="main" id="main" style={{ padding: '8px 48px 80px' }}>
-        {currentData.map((sec: any, si: number) => {
-          let secStockCount = 0;
+        {(() => {
+          const renderSectorBlock = (sec: any, si: number) => {
+            let secStockCount = 0;
           const subsHtml = sec.subs.map((sub: any, subI: number) => {
             const cards = sub.stocks.filter((st: any) => {
               const matchType = activeType === 'all' || st.type === activeType;
@@ -421,7 +422,38 @@ export default function DashboardOverview() {
               <div className="sector-body">{subsHtml}</div>
             </section>
           );
-        })}
+        };
+
+        if (activeGeo === 'India') {
+          const listedSectors = currentData.filter((sec: any) => sec.sector !== 'SME Emerge');
+          const smeSectors = currentData.filter((sec: any) => sec.sector === 'SME Emerge');
+          
+          return (
+            <>
+              {listedSectors.length > 0 && (
+                <div className="macro-section">
+                  <h2 style={{ fontFamily: 'Fraunces, serif', fontSize: '24px', paddingBottom: '12px', borderBottom: '1px solid var(--line)', marginBottom: '24px', color: 'var(--ink)' }}>
+                    NSE & BSE Listed Stocks
+                  </h2>
+                  {listedSectors.map((sec: any, i: number) => renderSectorBlock(sec, i))}
+                </div>
+              )}
+              
+              {smeSectors.length > 0 && (
+                <div className="macro-section" style={{ marginTop: '64px' }}>
+                  <h2 style={{ fontFamily: 'Fraunces, serif', fontSize: '24px', paddingBottom: '12px', borderBottom: '1px solid var(--line)', marginBottom: '24px', color: 'var(--ink)' }}>
+                    NSE & BSE SME Stocks
+                  </h2>
+                  {smeSectors.map((sec: any, i: number) => renderSectorBlock(sec, i + listedSectors.length))}
+                </div>
+              )}
+            </>
+          );
+        }
+
+        // Default behavior for US, Europe, Pre-IPO
+        return currentData.map((sec: any, si: number) => renderSectorBlock(sec, si));
+      })()}
       </div>
 
       {/* Floating Action Button — Manual AI Scan */}
