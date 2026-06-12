@@ -5,10 +5,20 @@ import dynamic from 'next/dynamic';
 import { useSession } from "next-auth/react";
 import stocksData from "../../data/stocks.json";
 
+import { useRouter } from "next/navigation";
+
 const ChartComponent = dynamic(() => import('../ChartComponent'), { ssr: false });
 
 export default function DashboardOverview() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push('/landing');
+    }
+  }, [status, router]);
+
   const [activeGeo, setActiveGeo] = useState<"US" | "Europe" | "India" | "Pre-IPO">("India");
   const [activeType, setActiveType] = useState<string>("all");
   const [query, setQuery] = useState("");
