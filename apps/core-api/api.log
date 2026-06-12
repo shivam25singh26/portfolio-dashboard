@@ -58,3 +58,7 @@
 [0m[33m[65.377ms] [34;1m[rows:0][0m SELECT * FROM "universe_equities" WHERE is_active = true ORDER BY updated_at ASC LIMIT 100
 2026/06/13 03:36:13 Fundamentals Miner: Error fetching stocks: ERROR: column "updated_at" does not exist (SQLSTATE 42703)
 2026/06/13 03:36:13 Successfully published Crypto scan batch (8 pairs) to queue
+
+2026/06/13 03:46:13 [31;1m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/scraper/fundamentals.go:25 [35;1mERROR: column "updated_at" does not exist (SQLSTATE 42703)
+[0m[33m[75.532ms] [34;1m[rows:0][0m SELECT * FROM "universe_equities" WHERE is_active = true ORDER BY updated_at ASC LIMIT 100
+2026/06/13 03:46:13 Fundamentals Miner: Error fetching stocks: ERROR: column "updated_at" does not exist (SQLSTATE 42703)

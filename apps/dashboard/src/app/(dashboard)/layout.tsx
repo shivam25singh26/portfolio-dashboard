@@ -3,6 +3,7 @@
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import { 
   LayoutDashboard, 
   BarChart2, 
@@ -11,13 +12,40 @@ import {
   Settings, 
   ShieldAlert,
   LogOut,
-  User as UserIcon
+  User as UserIcon,
+  Clock
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import GlobalSearch from "../components/GlobalSearch";
+import stocksData from "../../data/stocks.json";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
+  const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [secondsAgo, setSecondsAgo] = useState(0);
+
+  // Flatten all stocks for global search (JSON has region keys: India, US, Europe)
+  const allStocks = Object.entries(stocksData as any).flatMap(([_region, sectors]: [string, any]) =>
+    (Array.isArray(sectors) ? sectors : []).flatMap((sec: any) =>
+      (sec.subs || []).flatMap((sub: any) =>
+        (sub.stocks || []).map((st: any) => ({ ...st, sector: sec.sector }))
+      )
+    )
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSecondsAgo(Math.floor((Date.now() - lastUpdated.getTime()) / 1000));
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [lastUpdated]);
+
+  const freshnessLabel = secondsAgo < 60
+    ? `Updated just now`
+    : secondsAgo < 3600
+    ? `Updated ${Math.floor(secondsAgo / 60)}m ago`
+    : `Updated ${Math.floor(secondsAgo / 3600)}h ago`;
 
   const navItems = [
     { name: "Overview", href: "/", icon: LayoutDashboard },
@@ -41,6 +69,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           Growth<span>Engines</span>
         </div>
         
+        <div style={{ padding: '0 12px 16px' }}>
+          <GlobalSearch allStocks={allStocks} />
+        </div>
+
         <nav className="sidebar-nav">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
@@ -111,6 +143,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Main Content Area */}
       <main className="main-content">
+        {/* Data Freshness Banner */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '8px 48px', gap: '6px', borderBottom: '1px solid var(--line)', background: 'rgba(0,0,0,0.2)', fontSize: '11px', color: 'var(--dim)' }}>
+          <Clock size={11} />
+          {freshnessLabel} · NSE Market Hours: 9:15 AM – 3:30 PM IST
+        </div>
         <AnimatePresence mode="wait">
           <motion.div
             key={pathname}

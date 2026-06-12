@@ -3,7 +3,9 @@
 import { useState, useEffect, useMemo } from "react";
 import dynamic from 'next/dynamic';
 import { useSession } from "next-auth/react";
+import { Star } from "lucide-react";
 import stocksData from "../../data/stocks.json";
+import { useWatchlist } from "../components/WatchlistContext";
 
 import { useRouter } from "next/navigation";
 
@@ -32,6 +34,7 @@ export default function DashboardOverview() {
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [scanStatus, setScanStatus] = useState<'idle' | 'scanning' | 'done' | 'error'>('idle');
   const [paperPortfolio, setPaperPortfolio] = useState<{total_value: number, cash_balance: number, invested_value: number} | null>(null);
+  const { watchlist, toggle, isWatched } = useWatchlist();
 
   const triggerManualScan = async () => {
     if (scanStatus === 'scanning') return;
@@ -330,6 +333,7 @@ export default function DashboardOverview() {
                   <table className="data-table">
                     <thead>
                       <tr>
+                        <th scope="col" style={{ width: '32px' }}></th>
                         <th scope="col">Ticker</th>
                         <th scope="col">Company</th>
                         <th scope="col">Cap</th>
@@ -352,6 +356,15 @@ export default function DashboardOverview() {
                             onClick={() => toggleCard(st.t)}
                             style={{ '--type-color': colorMap[st.type] } as any}
                           >
+                            <td style={{ padding: '0 4px 0 8px', width: '32px' }} onClick={e => e.stopPropagation()}>
+                              <button 
+                                className={`watchlist-btn ${isWatched(st.t) ? 'active' : ''}`}
+                                onClick={() => toggle(st.t)}
+                                title={isWatched(st.t) ? 'Remove from watchlist' : 'Add to watchlist'}
+                              >
+                                <Star size={13} fill={isWatched(st.t) ? 'currentColor' : 'none'} />
+                              </button>
+                            </td>
                             <td className="dt-ticker">
                               <div className="dt-type-dot"></div>
                               {st.t.split('.')[0]}
