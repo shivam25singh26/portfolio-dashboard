@@ -33,7 +33,8 @@ const authOptions = {
           };
           console.log("[NextAuth] Sending to Go:", JSON.stringify({ email: payload.email, totp_code: payload.totp_code ? "(set)" : "(empty)" }));
 
-          const res = await fetch("http://127.0.0.1:8080/api/users/login", {
+          const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
+          const res = await fetch(`${backendUrl}/api/users/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),

@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Growth Engines',
   webDir: 'public', // Unused for Live Wrapper, but required by Capacitor
   server: {
-    url: 'http://192.168.0.251:3000',
+    url: 'https://portfolio-dashboard-sigma-ruby.vercel.app',
     cleartext: true
   }
 };
