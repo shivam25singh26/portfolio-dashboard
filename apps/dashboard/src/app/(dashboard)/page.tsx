@@ -119,7 +119,13 @@ export default function DashboardOverview() {
           moat: st.moat || '',
           risk: st.risk || '',
           sector: st.sector,
-          subIndustry: st.sub_industry || 'Other'
+          subIndustry: st.sub_industry || 'Other',
+          trailing_pe: st.trailing_pe || 0,
+          eps: st.eps || 0,
+          pb_ratio: st.pb_ratio || 0,
+          market_cap_val: st.market_cap_val || 0,
+          last_price: st.last_price || 0,
+          change_percent: st.change_percent || 0
         }));
 
         apiFlat.forEach((st: any) => {
