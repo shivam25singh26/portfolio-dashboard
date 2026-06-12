@@ -163,6 +163,14 @@ func main() {
 	// Universe Expansion Route
 	http.HandleFunc("/api/universe", handlers.HandleUniverse)
 
+	// Advanced Screener
+	http.HandleFunc("/api/screen/run", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		handlers.RunScreenerHandler(w, r)
+	})
+
 	// User Routes
 	http.HandleFunc("/api/users/register", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")

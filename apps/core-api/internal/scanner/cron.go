@@ -36,7 +36,7 @@ func StartHourlyScanner(client *angelone.Client) {
 
 	// Fire immediately on boot
 	log.Println("Initial Scanner Wakeup. Fetching market data...")
-	RunScan(client)
+	go RunScan(client)
 
 	go func() {
 		for {
