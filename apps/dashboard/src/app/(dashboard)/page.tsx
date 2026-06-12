@@ -213,11 +213,9 @@ export default function DashboardOverview() {
   const toggleCard = async (ticker: string) => {
     if (expandedCard === ticker) {
       setExpandedCard(null);
-      setSelectedStock(null);
       return;
     }
     const stock = allStocks.find((s: any) => s.t === ticker);
-    setSelectedStock(stock);
     setExpandedCard(ticker);
     setDetails((prev: any) => ({ ...prev, [ticker]: { loading: true } }));
 
