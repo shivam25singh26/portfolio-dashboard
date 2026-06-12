@@ -297,7 +297,7 @@ export default function DashboardOverview() {
                       >
                         <div className="card-top">
                           <div>
-                            <div className="ticker">{st.t}</div>
+                            <div className="ticker">{st.t.replace('.NS', '')}</div>
                             <div className="company">{st.c}</div>
                           </div>
                           <div className="badges">
@@ -309,7 +309,7 @@ export default function DashboardOverview() {
                         <div className="live-quote">
                           {quote ? (
                             quote.error || quote.c === 0 ? (
-                              <div className="lq-top"><span>{st.t}</span><span style={{color:'var(--danger)'}}>no data</span></div>
+                              <div className="lq-top"><span>{st.t.replace('.NS', '')}</span><span style={{color:'var(--danger)'}}>no data</span></div>
                             ) : (
                               <>
                                 <div className="lq-top">
