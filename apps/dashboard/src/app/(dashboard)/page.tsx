@@ -23,6 +23,9 @@ export default function DashboardOverview() {
   const [activeType, setActiveType] = useState<string>("all");
   const [query, setQuery] = useState("");
   const [marketData, setMarketData] = useState<any>(stocksData);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingUniverse, setLoadingUniverse] = useState(false);
   const [openSectors, setOpenSectors] = useState<Record<number, boolean>>({ 0: true });
   const [quotes, setQuotes] = useState<Record<string, any>>({});
   const [details, setDetails] = useState<Record<string, { metrics?: any, candle?: any, news?: any[], loading?: boolean, error?: boolean }>>({});
@@ -87,8 +90,69 @@ export default function DashboardOverview() {
     }
   }, [session?.user?.email]);
 
+  useEffect(() => {
+    if (activeGeo === 'India') {
+      fetchUniverse(1, true);
+    }
+  }, [activeGeo]);
+
+  const fetchUniverse = async (pageNum: number, reset = false) => {
+    setLoadingUniverse(true);
+    try {
+      const res = await fetch(`/go-api/universe?region=India&page=${pageNum}&limit=100`);
+      if (res.ok) {
+        const data = await res.json();
+        
+        // Transform flat API response to nested format expected by UI
+        const sectorsMap: Record<string, any> = {};
+        
+        const existingFlat = reset ? [] : marketData['India'].flatMap((s:any) => 
+          s.subs.flatMap((su:any) => su.stocks.map((st:any) => ({...st, sector: s.sector, subIndustry: su.name})))
+        );
+
+        // Map API data back to flat format
+        const apiFlat = (data.stocks || []).map((st: any) => ({
+          t: st.ticker,
+          c: st.company,
+          cap: st.cap || 'Mid',
+          type: st.type || 'established',
+          catalyst: st.catalyst || '',
+          moat: st.moat || '',
+          risk: st.risk || '',
+          sector: st.sector,
+          subIndustry: st.sub_industry || 'Other'
+        }));
+
+        const combinedFlat = [...existingFlat, ...apiFlat];
+
+        combinedFlat.forEach(st => {
+          if (!sectorsMap[st.sector]) {
+            sectorsMap[st.sector] = { sector: st.sector, num: Object.keys(sectorsMap).length + 1, subsMap: {} };
+          }
+          if (!sectorsMap[st.sector].subsMap[st.subIndustry]) {
+            sectorsMap[st.sector].subsMap[st.subIndustry] = { name: st.subIndustry, stocks: [] };
+          }
+          sectorsMap[st.sector].subsMap[st.subIndustry].stocks.push(st);
+        });
+
+        const newIndiaData = Object.values(sectorsMap).map((sec: any) => ({
+          sector: sec.sector,
+          num: sec.num,
+          subs: Object.values(sec.subsMap)
+        }));
+
+        setMarketData((prev: any) => ({ ...prev, India: newIndiaData }));
+        setHasMore(pageNum < data.pages);
+        setPage(pageNum);
+      }
+    } catch (e) {
+      console.error("Failed to fetch universe", e);
+    } finally {
+      setLoadingUniverse(false);
+    }
+  };
+
   const currentData = marketData[activeGeo] || [];
-  
   const allStocks = useMemo(() => {
     return currentData.flatMap((s: any) => 
       s.subs.flatMap((su: any) => 
@@ -390,6 +454,26 @@ export default function DashboardOverview() {
           {scanStatus === 'scanning' ? 'Scanning…' : scanStatus === 'done' ? 'Scan Sent!' : scanStatus === 'error' ? 'Failed' : 'AI Scan'}
         </span>
       </button>
+
+      {/* --- PAGINATION (LOAD MORE) --- */}
+      {activeGeo === 'India' && (
+        <div style={{ textAlign: 'center', margin: '40px 0' }}>
+          {hasMore ? (
+            <button 
+              className="action-btn" 
+              onClick={() => fetchUniverse(page + 1)}
+              disabled={loadingUniverse}
+              style={{ padding: '12px 32px', fontSize: '14px', minWidth: '200px' }}
+            >
+              {loadingUniverse ? 'Loading Universe...' : `Load More Stocks (Page ${page + 1})`}
+            </button>
+          ) : (
+            <div style={{ color: 'var(--muted)', fontSize: '14px', fontFamily: '"Spline Sans Mono", monospace' }}>
+              — End of Listed Universe —
+            </div>
+          )}
+        </div>
+      )}
 
       {/* --- SLIDE-OVER DRAWER --- */}
       {expandedCard && (() => {
