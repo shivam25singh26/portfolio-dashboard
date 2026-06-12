@@ -285,26 +285,15 @@ export default function DashboardOverview() {
 
       <div className="controls">
         <div className="seg" id="geoFilter">
-          <button className={activeGeo === "US" ? "on" : ""} onClick={() => { setActiveGeo("US"); setOpenSectors({0: true}); }}>US</button>
-          <button className={activeGeo === "Europe" ? "on" : ""} onClick={() => { setActiveGeo("Europe"); setOpenSectors({0: true}); }}>EUROPE</button>
-          <button className={activeGeo === "India" ? "on" : ""} onClick={() => { setActiveGeo("India"); setOpenSectors({0: true}); }}>INDIA</button>
-          <button className={activeGeo === "Pre-IPO" ? "on" : ""} onClick={() => { setActiveGeo("Pre-IPO"); setOpenSectors({0: true}); }}>PRE-IPO</button>
+          <button className="on">INDIA</button>
         </div>
-        {activeGeo === "India" && (
-          <a href="/fo" style={{ padding: '10px 16px', background: 'var(--accent)', color: '#04130b', textDecoration: 'none', borderRadius: 'var(--radius)', fontFamily: "'Spline Sans Mono', monospace", fontSize: '12px', fontWeight: 600, display: 'inline-block' }}>F&O Terminal ↗</a>
-        )}
+        <a href="/fo" style={{ padding: '10px 16px', background: 'var(--accent)', color: '#04130b', textDecoration: 'none', borderRadius: 'var(--radius)', fontFamily: "'Spline Sans Mono', monospace", fontSize: '12px', fontWeight: 600, display: 'inline-block' }}>F&O Terminal ↗</a>
         <input 
           className="search" 
           placeholder="search ticker, company, sector, catalyst…" 
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-          <div className="nav-tabs" style={{ marginBottom: '0' }}>
-            <button className={activeGeo === "India" ? "active" : ""} onClick={() => setActiveGeo("India")}>India</button>
-          </div>
-        {activeGeo === "India" && (
-          <a href="/fo" style={{ padding: '10px 16px', background: 'var(--accent)', color: '#04130b', textDecoration: 'none', borderRadius: 'var(--radius)', fontFamily: "'Spline Sans Mono', monospace", fontSize: '12px', fontWeight: 600, display: 'inline-block' }}>F&O Terminal ↗</a>
-        )}
         <div className="seg" id="typeFilter">
           <button className={activeType === "all" ? "on" : ""} onClick={() => setActiveType("all")}>ALL</button>
           <button className={activeType === "established" ? "on" : ""} onClick={() => setActiveType("established")}>ESTABLISHED</button>
