@@ -23,8 +23,6 @@ export default function DashboardOverview() {
   const [activeType, setActiveType] = useState<string>("all");
   const [query, setQuery] = useState("");
   const [marketData, setMarketData] = useState<any>(stocksData);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
   const [loadingUniverse, setLoadingUniverse] = useState(false);
   const [openSectors, setOpenSectors] = useState<Record<number, boolean>>({ 0: true });
   const [quotes, setQuotes] = useState<Record<string, any>>({});
@@ -92,24 +90,24 @@ export default function DashboardOverview() {
 
   useEffect(() => {
     if (activeGeo === 'India') {
-      fetchUniverse(1, true);
+      fetchUniverse();
     }
   }, [activeGeo]);
 
-  const fetchUniverse = async (pageNum: number, reset = false) => {
+  const fetchUniverse = async () => {
+    if (marketData['India'] && marketData['India'].length > 0 && marketData['India'][0]?.subs?.length > 0) {
+      // Already fetched
+      return;
+    }
     setLoadingUniverse(true);
     try {
-      const res = await fetch(`/go-api/universe?region=India&page=${pageNum}&limit=100`);
+      const res = await fetch(`/go-api/universe?region=India&page=1&limit=3000`);
       if (res.ok) {
         const data = await res.json();
         
         // Transform flat API response to nested format expected by UI
         const sectorsMap: Record<string, any> = {};
         
-        const existingFlat = reset ? [] : marketData['India'].flatMap((s:any) => 
-          s.subs.flatMap((su:any) => su.stocks.map((st:any) => ({...st, sector: s.sector, subIndustry: su.name})))
-        );
-
         // Map API data back to flat format
         const apiFlat = (data.stocks || []).map((st: any) => ({
           t: st.ticker,
@@ -123,9 +121,7 @@ export default function DashboardOverview() {
           subIndustry: st.sub_industry || 'Other'
         }));
 
-        const combinedFlat = [...existingFlat, ...apiFlat];
-
-        combinedFlat.forEach(st => {
+        apiFlat.forEach((st: any) => {
           if (!sectorsMap[st.sector]) {
             sectorsMap[st.sector] = { sector: st.sector, num: Object.keys(sectorsMap).length + 1, subsMap: {} };
           }
@@ -142,8 +138,6 @@ export default function DashboardOverview() {
         }));
 
         setMarketData((prev: any) => ({ ...prev, India: newIndiaData }));
-        setHasMore(pageNum < data.pages);
-        setPage(pageNum);
       }
     } catch (e) {
       console.error("Failed to fetch universe", e);
@@ -330,9 +324,14 @@ export default function DashboardOverview() {
       </div>
 
       <div className="main" id="main" style={{ padding: '8px 48px 80px' }}>
-        {(() => {
-          const renderSectorBlock = (sec: any, si: number) => {
-            let secStockCount = 0;
+        {loadingUniverse ? (
+          <div style={{ textAlign: 'center', padding: '100px 0', color: 'var(--muted)', fontFamily: '"Spline Sans Mono", monospace' }}>
+            Loading all 2000+ Institutional equities into memory...
+          </div>
+        ) : (
+          (() => {
+            const renderSectorBlock = (sec: any, si: number) => {
+              let secStockCount = 0;
           const subsHtml = sec.subs.map((sub: any, subI: number) => {
             const cards = sub.stocks.filter((st: any) => {
               const matchType = activeType === 'all' || st.type === activeType;
@@ -453,15 +452,15 @@ export default function DashboardOverview() {
 
         // Default behavior for US, Europe, Pre-IPO
         return currentData.map((sec: any, si: number) => renderSectorBlock(sec, si));
-      })()}
+      })()
+      )}
       </div>
 
       {/* Floating Action Button — Manual AI Scan */}
-      <button
-        id="fabScanButton"
-        className={`fab-scan ${scanStatus}`}
+      <button 
+        className={`fab-scan ${scanStatus}`} 
         onClick={triggerManualScan}
-        title={scanStatus === 'scanning' ? 'Scanning…' : 'Trigger Manual AI Scan'}
+        disabled={scanStatus === 'scanning' || scanStatus === 'done'}
         aria-label="Trigger Manual AI Market Scan"
       >
         {scanStatus === 'scanning' ? (
@@ -486,26 +485,6 @@ export default function DashboardOverview() {
           {scanStatus === 'scanning' ? 'Scanning…' : scanStatus === 'done' ? 'Scan Sent!' : scanStatus === 'error' ? 'Failed' : 'AI Scan'}
         </span>
       </button>
-
-      {/* --- PAGINATION (LOAD MORE) --- */}
-      {activeGeo === 'India' && (
-        <div style={{ textAlign: 'center', margin: '40px 0' }}>
-          {hasMore ? (
-            <button 
-              className="action-btn" 
-              onClick={() => fetchUniverse(page + 1)}
-              disabled={loadingUniverse}
-              style={{ padding: '12px 32px', fontSize: '14px', minWidth: '200px' }}
-            >
-              {loadingUniverse ? 'Loading Universe...' : `Load More Stocks (Page ${page + 1})`}
-            </button>
-          ) : (
-            <div style={{ color: 'var(--muted)', fontSize: '14px', fontFamily: '"Spline Sans Mono", monospace' }}>
-              — End of Listed Universe —
-            </div>
-          )}
-        </div>
-      )}
 
       {/* --- SLIDE-OVER DRAWER --- */}
       {expandedCard && (() => {
