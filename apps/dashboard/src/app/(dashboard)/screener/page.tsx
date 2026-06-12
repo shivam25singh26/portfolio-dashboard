@@ -46,7 +46,7 @@ export default function ScreenerPage() {
         <div className="query-box-container" style={{ background: 'var(--panel)', padding: '24px', borderRadius: 'var(--radius)', border: '1px solid var(--line)', marginBottom: '32px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: 'var(--ink)' }}>Query Editor</h3>
-            <span style={{ fontSize: '12px', color: 'var(--dim)', fontFamily: "'Spline Sans Mono', monospace" }}>Available Metrics: Market Cap (Cr), PE, EPS, Price</span>
+            <span style={{ fontSize: '12px', color: 'var(--dim)', fontFamily: "'Spline Sans Mono', monospace" }}>Available: Market Cap, PE, EPS, Price, ROE, ROCE, Debt to Equity, Dividend Yield, Sales Growth, Profit Growth</span>
           </div>
           
           <textarea 
@@ -128,7 +128,9 @@ export default function ScreenerPage() {
                       <th>Sector</th>
                       <th>Mkt Cap</th>
                       <th>PE</th>
-                      <th>EPS</th>
+                      <th>ROE</th>
+                      <th>Debt/Eq</th>
+                      <th>Yield</th>
                       <th>Price</th>
                     </tr>
                   </thead>
@@ -147,7 +149,9 @@ export default function ScreenerPage() {
                             : '-'}
                         </td>
                         <td className="dt-cap">{st.trailing_pe > 0 ? st.trailing_pe.toFixed(1) : '-'}</td>
-                        <td className="dt-cap">{st.eps !== 0 ? st.eps.toFixed(1) : '-'}</td>
+                        <td className="dt-cap">{st.roe !== 0 ? st.roe.toFixed(2) + '%' : '-'}</td>
+                        <td className="dt-cap">{st.debt_to_equity !== 0 ? st.debt_to_equity.toFixed(2) : '-'}</td>
+                        <td className="dt-cap">{st.dividend_yield !== 0 ? st.dividend_yield.toFixed(2) + '%' : '-'}</td>
                         <td className="dt-price">₹{st.last_price > 0 ? st.last_price.toFixed(2) : '-'}</td>
                       </tr>
                     ))}

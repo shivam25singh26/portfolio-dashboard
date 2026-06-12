@@ -25,6 +25,17 @@ var columnMap = map[string]string{
 	"price to earning": "trailing_pe",
 	"eps":              "eps",
 	"price":            "last_price",
+	"roe":              "roe",
+	"return on equity": "roe",
+	"roce":             "roce",
+	"return on capital employed": "roce",
+	"debt to equity":   "debt_to_equity",
+	"d/e":              "debt_to_equity",
+	"dividend yield":   "dividend_yield",
+	"yield":            "dividend_yield",
+	"promoter holding": "promoter_holding",
+	"sales growth":     "sales_growth",
+	"profit growth":    "profit_growth",
 }
 
 // Map logical operators

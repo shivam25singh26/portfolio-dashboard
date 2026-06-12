@@ -17,6 +17,13 @@ type UniverseEquity struct {
 	EPS           float64   `json:"eps"`
 	PBRatio       float64   `json:"pb_ratio"`
 	MarketCapVal  float64   `json:"market_cap_val"`
+	ROE             float64   `json:"roe"`
+	ROCE            float64   `json:"roce"`
+	DebtToEquity    float64   `json:"debt_to_equity"`
+	DividendYield   float64   `json:"dividend_yield"`
+	PromoterHolding float64   `json:"promoter_holding"`
+	SalesGrowth     float64   `json:"sales_growth"`
+	ProfitGrowth    float64   `json:"profit_growth"`
 	Catalyst      string    `json:"catalyst"`
 	Moat        string    `json:"moat"`
 	Risk        string    `json:"risk"`
