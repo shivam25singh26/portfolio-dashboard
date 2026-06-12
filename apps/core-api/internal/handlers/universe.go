@@ -39,6 +39,9 @@ func HandleUniverse(w http.ResponseWriter, r *http.Request) {
 		limit = 50 // Default 50 items per page
 	}
 
+	// Add aggressive caching headers for Vercel Edge Caching (stale-while-revalidate)
+	w.Header().Set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=59")
+
 	offset := (page - 1) * limit
 
 	var equities []models.UniverseEquity

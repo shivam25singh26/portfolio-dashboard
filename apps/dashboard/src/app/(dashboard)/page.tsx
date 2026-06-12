@@ -166,36 +166,35 @@ export default function DashboardOverview() {
     { n: allStocks.filter((s: any) => s.type === "speculative").length, l: "Speculative" },
   ];
 
-  const fetchQuotesForSector = async (sectorIdx: number) => {
-    const sector = currentData[sectorIdx];
-    if (!sector) return;
-    const tickers = sector.subs.flatMap((su: any) => su.stocks.map((x: any) => x.t));
-    for (const t of tickers) {
-      if (!quotes[t]) {
-        if (t.startsWith("PRIV.")) {
-          const basePrice = 50 + (t.length * 7); 
-          setQuotes(prev => ({ ...prev, [t]: { c: basePrice, h: basePrice * 1.05, l: basePrice * 0.95, dp: 1.2 } }));
-        } else {
-          fetch(`/api/quote?symbol=${t}`)
-            .then(res => res.json())
-            .then(data => setQuotes(prev => ({ ...prev, [t]: data })))
-            .catch(() => setQuotes(prev => ({ ...prev, [t]: { error: true } })));
+  useEffect(() => {
+    // Connect to Go Backend WebSocket for Live Prices
+    const wsUrl = process.env.NEXT_PUBLIC_API_URL?.replace('http', 'ws') || 'ws://127.0.0.1:8080';
+    const ws = new WebSocket(`${wsUrl}/ws/live`);
+    
+    ws.onmessage = (event) => {
+      try {
+        const tick = JSON.parse(event.data);
+        if (tick.ticker && tick.last_price) {
+          setQuotes(prev => ({ 
+            ...prev, 
+            [tick.ticker]: { 
+              ...prev[tick.ticker],
+              c: tick.last_price,
+              dp: tick.change_percent 
+            } 
+          }));
         }
+      } catch (e) {
+        console.error("WS Parse Error:", e);
       }
-    }
-  };
+    };
+
+    return () => ws.close();
+  }, []);
 
   const toggleSector = (idx: number) => {
-    setOpenSectors(prev => {
-      const isOpen = !prev[idx];
-      if (isOpen) fetchQuotesForSector(idx);
-      return { ...prev, [idx]: isOpen };
-    });
+    setOpenSectors(prev => ({ ...prev, [idx]: !prev[idx] }));
   };
-
-  useEffect(() => {
-    fetchQuotesForSector(0);
-  }, [activeGeo]);
 
   const toggleCard = async (ticker: string) => {
     if (expandedCard === ticker) {
@@ -367,8 +366,9 @@ export default function DashboardOverview() {
                             <div className="company">{st.c}</div>
                           </div>
                           <div className="badges">
-                            <span className={`badge ${st.type}`}>{st.type}</span>
-                            <span className="badge cap">{st.cap} cap</span>
+                            {st.trailing_pe > 0 && <span className="badge" style={{background: 'var(--bg2)', color: 'var(--ink)'}}>PE: {st.trailing_pe.toFixed(1)}</span>}
+                            {st.eps !== 0 && st.eps !== undefined && <span className="badge" style={{background: 'var(--bg2)', color: 'var(--ink)'}}>EPS: {st.eps.toFixed(1)}</span>}
+                            <span className="badge cap" style={{background: st.cap === 'Large' ? 'rgba(46,160,67,0.1)' : 'var(--bg2)', color: st.cap === 'Large' ? 'var(--established)' : 'var(--muted)'}}>{st.cap}</span>
                           </div>
                         </div>
                         

@@ -1,0 +1,54 @@
+
+2026/06/12 23:26:43 [32m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/db/db.go:21 [33mSLOW SQL >= 200ms
+[0m[31;1m[299.963ms] [33m[rows:1][35m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'ai_insights' AND table_type = 'BASE TABLE'[0m
+
+2026/06/12 23:26:44 [32m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/db/db.go:21 [33mSLOW SQL >= 200ms
+[0m[31;1m[412.646ms] [33m[rows:-][35m SELECT a.attname as column_name, format_type(a.atttypid, a.atttypmod) AS data_type
+		FROM pg_attribute a JOIN pg_class b ON a.attrelid = b.oid AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA())
+		WHERE a.attnum > 0 -- hide internal columns
+		AND NOT a.attisdropped -- hide deleted columns
+		AND b.relname = 'ai_insights'[0m
+
+2026/06/12 23:26:45 [32m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/db/db.go:21 [33mSLOW SQL >= 200ms
+[0m[31;1m[467.588ms] [33m[rows:0][35m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'ai_insights' AND column_name = 'id') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'ai_insights' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))[0m
+
+2026/06/12 23:26:45 [32m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/db/db.go:21 [33mSLOW SQL >= 200ms
+[0m[31;1m[381.422ms] [33m[rows:0][35m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'ai_insights' AND column_name = 'deleted_at') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'ai_insights' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))[0m
+
+2026/06/12 23:26:46 [32m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/db/db.go:21 [33mSLOW SQL >= 200ms
+[0m[31;1m[458.740ms] [33m[rows:0][35m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'ai_insights' AND column_name = 'exchange') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'ai_insights' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))[0m
+
+2026/06/12 23:26:46 [32m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/db/db.go:21 [33mSLOW SQL >= 200ms
+[0m[31;1m[383.441ms] [33m[rows:0][35m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'ai_insights' AND column_name = 'stop_loss') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'ai_insights' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))[0m
+
+2026/06/12 23:26:47 [32m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/db/db.go:21 [33mSLOW SQL >= 200ms
+[0m[31;1m[462.062ms] [33m[rows:0][35m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'ai_insights' AND column_name = 'risk') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'ai_insights' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))[0m
+
+2026/06/12 23:26:47 [32m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/db/db.go:21 [33mSLOW SQL >= 200ms
+[0m[31;1m[382.940ms] [33m[rows:0][35m SELECT description FROM pg_catalog.pg_description WHERE objsubid = (SELECT ordinal_position FROM information_schema.columns WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'ai_insights' AND column_name = 'raw_text') AND objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = 'ai_insights' AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = CURRENT_SCHEMA()))[0m
+
+2026/06/12 23:26:48 [32m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/db/db.go:21 [33mSLOW SQL >= 200ms
+[0m[31;1m[463.413ms] [33m[rows:1][35m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'signals' AND table_type = 'BASE TABLE'[0m
+
+2026/06/12 23:26:56 [31;1m [35;1mERROR: constraint "uni_universe_equities_ticker" of relation "universe_equities" does not exist (SQLSTATE 42704)
+[0m[33m[61.118ms] [34;1m[rows:0][0m ALTER TABLE "universe_equities" DROP CONSTRAINT "uni_universe_equities_ticker"
+2026/06/12 23:26:56 Failed to migrate database: ERROR: constraint "uni_universe_equities_ticker" of relation "universe_equities" does not exist (SQLSTATE 42704)
+2026/06/12 23:26:56 Database connection established and migrated successfully.
+2026/06/12 23:26:59 RabbitMQ connected and queues declared.
+2026/06/12 23:26:59 Successfully authenticated with AngelOne API
+2026/06/12 23:26:59 Starting IST Market Scanner (08:45, 10:00, 12:00, 14:00, 15:15)...
+2026/06/12 23:26:59 Initial Scanner Wakeup. Fetching market data...
+2026/06/12 23:27:01 Successfully published live market scan batch (229 stocks) to queue
+2026/06/12 23:27:01 Scanner sleeping for 9h17m59s. Next run scheduled at: 08:45:00 IST
+2026/06/12 23:27:01 Starting Order Poller (15-second intervals)...
+2026/06/12 23:27:01 Starting Go Gateway on :8080...
+
+2026/06/12 23:27:15 [32m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/handlers/universe.go:61 [33mSLOW SQL >= 200ms
+[0m[31;1m[484.234ms] [33m[rows:2106][35m SELECT * FROM "universe_equities" WHERE is_active = true AND region = 'India' ORDER BY cap ASC, ticker ASC LIMIT 3000[0m
+
+2026/06/12 23:27:31 [32m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/scanner/order_poller.go:27 [33mSLOW SQL >= 200ms
+[0m[31;1m[472.320ms] [33m[rows:0][35m SELECT * FROM "trade_logs" WHERE status = 'PENDING' AND "trade_logs"."deleted_at" IS NULL[0m
+2026/06/12 23:42:01 Starting 15m Crypto Scanner batch...
+2026/06/12 23:42:01 Successfully published Crypto scan batch (8 pairs) to queue
+2026/06/12 23:57:01 Starting 15m Crypto Scanner batch...
+2026/06/12 23:57:01 Successfully published Crypto scan batch (8 pairs) to queue

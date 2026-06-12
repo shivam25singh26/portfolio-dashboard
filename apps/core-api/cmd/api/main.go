@@ -15,6 +15,7 @@ import (
 	"github.com/shivam23singh24/core-api/internal/mq"
 	"github.com/shivam23singh24/core-api/internal/paper"
 	"github.com/shivam23singh24/core-api/internal/scanner"
+	"github.com/shivam23singh24/core-api/internal/scraper"
 
 	"github.com/joho/godotenv"
 	"github.com/pquerna/otp/totp"
@@ -279,6 +280,13 @@ func main() {
 		}
 		handlers.GetEquityCurveHandler(w, r)
 	})
+
+	// Start Background Scrapers for Free-Tier Scalability
+	scraper.StartFundamentalsMiner()
+	scraper.StartIPOSync()
+
+	// WebSocket Endpoint for Live Pricing
+	http.HandleFunc("/ws/live", handlers.LivePricingWS)
 
 	log.Println("Starting Go Gateway on :8080...")
 	if err := http.ListenAndServe(":8080", nil); err != nil {

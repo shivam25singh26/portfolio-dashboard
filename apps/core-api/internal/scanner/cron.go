@@ -6,6 +6,9 @@ import (
 	"time"
 
 	"github.com/shivam23singh24/core-api/internal/angelone"
+	"github.com/shivam23singh24/core-api/internal/db"
+	"github.com/shivam23singh24/core-api/internal/handlers"
+	"github.com/shivam23singh24/core-api/internal/models"
 	"github.com/shivam23singh24/core-api/internal/mq"
 )
 
@@ -124,6 +127,22 @@ func RunScan(client *angelone.Client) {
 	}
 
 	if len(batchData) > 0 {
+		// Broadcast to WebSockets and Save to DB
+		for _, bd := range batchData {
+			// Update DB
+			db.DB.Model(&models.UniverseEquity{}).Where("ticker = ?", bd.Symbol).Update("last_price", bd.LTP)
+			
+			// Broadcast WebSocket
+			select {
+			case handlers.PriceBroadcast <- models.PriceTick{
+				Ticker:    bd.Symbol,
+				LastPrice: bd.LTP,
+			}:
+			default:
+				// Channel full, drop tick
+			}
+		}
+
 		payload, err := json.Marshal(batchData)
 		if err != nil {
 			log.Printf("Failed to marshal batch market data: %v", err)
