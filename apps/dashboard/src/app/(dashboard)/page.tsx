@@ -238,7 +238,7 @@ export default function DashboardOverview() {
       <header>
         <div>
           <h1>Market Overview</h1>
-          <p>Professional equity research across {allStocks.length} names in {activeGeo === 'Pre-IPO' ? 'Private Markets' : activeGeo}.</p>
+          <p>Professional equity research across {allStocks.length} names in {activeGeo}.</p>
         </div>
       </header>
 
