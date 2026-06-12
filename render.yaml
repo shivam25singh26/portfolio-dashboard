@@ -1,6 +1,7 @@
 services:
   - type: web
     name: fintech-core-api
+    plan: free
     env: go
     rootDir: apps/core-api
     buildCommand: go build -o api cmd/api/main.go
@@ -21,6 +22,7 @@ services:
 
   - type: web
     name: ai-signal-engine
+    plan: free
     env: python
     rootDir: apps/ai-engine
     buildCommand: pip install -r requirements.txt
