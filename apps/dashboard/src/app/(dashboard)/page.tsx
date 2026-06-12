@@ -25,7 +25,7 @@ export default function DashboardOverview() {
   const [marketData, setMarketData] = useState<any>(stocksData);
   const [isIndiaFetched, setIsIndiaFetched] = useState(false);
   const [loadingUniverse, setLoadingUniverse] = useState(false);
-  const [openSectors, setOpenSectors] = useState<Record<number, boolean>>({ 0: true });
+  const [openSectors, setOpenSectors] = useState<Record<number, boolean>>({});
   const [quotes, setQuotes] = useState<Record<string, any>>({});
   const [details, setDetails] = useState<Record<string, { metrics?: any, candle?: any, news?: any[], loading?: boolean, error?: boolean }>>({});
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
@@ -328,54 +328,30 @@ export default function DashboardOverview() {
             return (
               <div key={subI} className="subind">
                 <div className="subind-name">{sub.name} <span className="tag-shift">{sub.shift}</span></div>
-                <div className="grid">
+                <div className="stock-pill-container">
                   {cards.map((st: any) => {
                     const quote = quotes[st.t];
                     const chg = quote?.dp;
-                    const d = details[st.t];
                     const colorMap: any = { established:'var(--established)', aggressive:'var(--aggressive)', speculative:'var(--speculative)' };
                     
                     return (
                       <div 
                         key={st.t} 
-                        className={`card`}
+                        className="stock-pill"
                         onClick={() => toggleCard(st.t)}
                         style={{ '--type-color': colorMap[st.type] } as any}
                       >
-                        <div className="card-top">
-                          <div className="ticker">{st.t.split('.')[0]}</div>
-                        </div>
-                        
-                        <div className="live-quote">
-                          {quote ? (
-                            quote.error || quote.c === 0 ? (
-                              <div className="lq-top"><span>{st.t.split('.')[0]}</span><span style={{color:'var(--danger)'}}>no data</span></div>
-                            ) : (
-                              <>
-                                <div className="lq-top">
-                                  <span className="price">{activeGeo === 'India' ? '₹' : activeGeo === 'Europe' ? '€' : '$'}{quote.c?.toFixed(2)}</span>
-                                  <span className={chg >= 0 ? 'up' : 'down'}>{chg >= 0 ? '▲' : '▼'} {chg?.toFixed(2)}%</span>
-                                </div>
-                                {quote.h && quote.l && quote.h > quote.l && (
-                                  <div className="day-range" title={`Day Range: ${quote.l.toFixed(2)} - ${quote.h.toFixed(2)}`}>
-                                    <div className="dr-low">L</div>
-                                    <div className="dr-bar">
-                                      <div className="dr-indicator" style={{left: `${Math.min(Math.max(((quote.c - quote.l) / (quote.h - quote.l)) * 100, 0), 100)}%`}}></div>
-                                    </div>
-                                    <div className="dr-high">H</div>
-                                  </div>
-                                )}
-                              </>
-                            )
-                          ) : (
-                            <div style={{display:'flex', flexDirection:'column', gap:'6px'}}>
-                              <div className="skeleton" style={{height:'16px', width:'60%'}}></div>
-                              <div className="skeleton" style={{height:'8px', width:'100%'}}></div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Clean grid card - details moved to Slide-Over Drawer */}
+                        <span className="sp-ticker">{st.t.split('.')[0]}</span>
+                        {quote ? (
+                          <>
+                            <span className="sp-price">{activeGeo === 'India' ? '₹' : activeGeo === 'Europe' ? '€' : '$'}{quote.c?.toFixed(2)}</span>
+                            <span className={`sp-chg ${chg > 0 ? 'up' : chg < 0 ? 'down' : 'neutral'}`}>
+                              {chg > 0 ? '▲' : chg < 0 ? '▼' : ''} {Math.abs(chg || 0).toFixed(2)}%
+                            </span>
+                          </>
+                        ) : (
+                          <span className="skeleton" style={{width: '60px', height: '14px'}}></span>
+                        )}
                       </div>
                     );
                   })}
