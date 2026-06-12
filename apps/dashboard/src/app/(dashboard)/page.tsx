@@ -19,7 +19,7 @@ export default function DashboardOverview() {
     }
   }, [status, router]);
 
-  const [activeGeo, setActiveGeo] = useState<"India">("India");
+  const [activeGeo, setActiveGeo] = useState<"US" | "Europe" | "India" | "Pre-IPO">("India");
   const [activeType, setActiveType] = useState<string>("all");
   const [query, setQuery] = useState("");
   const [marketData, setMarketData] = useState<any>(stocksData);
@@ -238,7 +238,7 @@ export default function DashboardOverview() {
       <header>
         <div>
           <h1>Market Overview</h1>
-          <p>Professional equity research across {allStocks.length} names in {activeGeo}.</p>
+          <p>Professional equity research across {allStocks.length} names in {activeGeo === 'Pre-IPO' ? 'Private Markets' : activeGeo}.</p>
         </div>
       </header>
 
@@ -285,9 +285,14 @@ export default function DashboardOverview() {
 
       <div className="controls">
         <div className="seg" id="geoFilter">
-          <button className="on">INDIA</button>
+          <button className={activeGeo === "US" ? "on" : ""} onClick={() => { setActiveGeo("US"); setOpenSectors({0: true}); }}>US</button>
+          <button className={activeGeo === "Europe" ? "on" : ""} onClick={() => { setActiveGeo("Europe"); setOpenSectors({0: true}); }}>EUROPE</button>
+          <button className={activeGeo === "India" ? "on" : ""} onClick={() => { setActiveGeo("India"); setOpenSectors({0: true}); }}>INDIA</button>
+          <button className={activeGeo === "Pre-IPO" ? "on" : ""} onClick={() => { setActiveGeo("Pre-IPO"); setOpenSectors({0: true}); }}>PRE-IPO</button>
         </div>
-        <a href="/fo" style={{ padding: '10px 16px', background: 'var(--accent)', color: '#04130b', textDecoration: 'none', borderRadius: 'var(--radius)', fontFamily: "'Spline Sans Mono', monospace", fontSize: '12px', fontWeight: 600, display: 'inline-block' }}>F&O Terminal ↗</a>
+        {activeGeo === "India" && (
+          <a href="/fo" style={{ padding: '10px 16px', background: 'var(--accent)', color: '#04130b', textDecoration: 'none', borderRadius: 'var(--radius)', fontFamily: "'Spline Sans Mono', monospace", fontSize: '12px', fontWeight: 600, display: 'inline-block' }}>F&O Terminal ↗</a>
+        )}
         <input 
           className="search" 
           placeholder="search ticker, company, sector, catalyst…" 
