@@ -159,7 +159,10 @@ func main() {
 		json.NewEncoder(w).Encode(signals)
 	})
 
-	// Auth endpoints
+	// Universe Expansion Route
+	http.HandleFunc("/api/universe", handlers.HandleUniverse)
+
+	// User Routes
 	http.HandleFunc("/api/users/register", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")

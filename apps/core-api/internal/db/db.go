@@ -26,6 +26,7 @@ func ConnectDatabase(dsn string) {
 		&models.PaperTrade{},
 		&models.PortfolioSnapshot{},
 		&models.Subscription{},
+		&models.UniverseEquity{},
 	)
 	if err != nil {
 		log.Printf("Failed to migrate database: %v", err)
