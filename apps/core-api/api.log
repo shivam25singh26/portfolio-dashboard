@@ -780,3 +780,24 @@
 2026/06/13 01:33:03 Fundamentals Miner: Error fetching stocks: ERROR: column "updated_at" does not exist (SQLSTATE 42703)
 2026/06/13 01:33:05 Starting 15m Crypto Scanner batch...
 2026/06/13 01:33:05 Successfully published Crypto scan batch (8 pairs) to queue
+
+2026/06/13 01:42:03 [32m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/scanner/order_poller.go:27 [33mSLOW SQL >= 200ms
+[0m[31;1m[1119.697ms] [33m[rows:0][35m SELECT * FROM "trade_logs" WHERE status = 'PENDING' AND "trade_logs"."deleted_at" IS NULL[0m
+
+2026/06/13 01:42:03 [32m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/paper/tracker.go:24 [33mSLOW SQL >= 200ms
+[0m[31;1m[1120.773ms] [33m[rows:0][35m SELECT * FROM "paper_trades" WHERE status = 'OPEN' AND "paper_trades"."deleted_at" IS NULL[0m
+
+2026/06/13 01:43:03 [31;1m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/scraper/fundamentals.go:25 [35;1mERROR: column "updated_at" does not exist (SQLSTATE 42703)
+[0m[33m[391.923ms] [34;1m[rows:0][0m SELECT * FROM "universe_equities" WHERE is_active = true ORDER BY updated_at ASC LIMIT 100
+2026/06/13 01:43:03 Fundamentals Miner: Error fetching stocks: ERROR: column "updated_at" does not exist (SQLSTATE 42703)
+
+2026/06/13 01:43:47 [32m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/scanner/order_poller.go:27 [33mSLOW SQL >= 200ms
+[0m[31;1m[384.433ms] [33m[rows:0][35m SELECT * FROM "trade_logs" WHERE status = 'PENDING' AND "trade_logs"."deleted_at" IS NULL[0m
+
+2026/06/13 01:44:47 [32m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/scanner/order_poller.go:27 [33mSLOW SQL >= 200ms
+[0m[31;1m[251.281ms] [33m[rows:0][35m SELECT * FROM "trade_logs" WHERE status = 'PENDING' AND "trade_logs"."deleted_at" IS NULL[0m
+
+2026/06/13 01:47:47 [32m/Users/shivamsingh/Desktop/Shivam/PortfolioDashboard/apps/core-api/internal/scanner/order_poller.go:27 [33mSLOW SQL >= 200ms
+[0m[31;1m[322.828ms] [33m[rows:0][35m SELECT * FROM "trade_logs" WHERE status = 'PENDING' AND "trade_logs"."deleted_at" IS NULL[0m
+2026/06/13 01:48:05 Starting 15m Crypto Scanner batch...
+2026/06/13 01:48:05 Successfully published Crypto scan batch (8 pairs) to queue

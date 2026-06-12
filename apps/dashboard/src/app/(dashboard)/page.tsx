@@ -328,33 +328,57 @@ export default function DashboardOverview() {
             return (
               <div key={subI} className="subind">
                 <div className="subind-name">{sub.name} <span className="tag-shift">{sub.shift}</span></div>
-                <div className="stock-pill-container">
-                  {cards.map((st: any) => {
-                    const quote = quotes[st.t];
-                    const chg = quote?.dp;
-                    const colorMap: any = { established:'var(--established)', aggressive:'var(--aggressive)', speculative:'var(--speculative)' };
-                    
-                    return (
-                      <div 
-                        key={st.t} 
-                        className="stock-pill"
-                        onClick={() => toggleCard(st.t)}
-                        style={{ '--type-color': colorMap[st.type] } as any}
-                      >
-                        <span className="sp-ticker">{st.t.split('.')[0]}</span>
-                        {quote ? (
-                          <>
-                            <span className="sp-price">{activeGeo === 'India' ? '₹' : activeGeo === 'Europe' ? '€' : '$'}{quote.c?.toFixed(2)}</span>
-                            <span className={`sp-chg ${chg > 0 ? 'up' : chg < 0 ? 'down' : 'neutral'}`}>
-                              {chg > 0 ? '▲' : chg < 0 ? '▼' : ''} {Math.abs(chg || 0).toFixed(2)}%
-                            </span>
-                          </>
-                        ) : (
-                          <span className="skeleton" style={{width: '60px', height: '14px'}}></span>
-                        )}
-                      </div>
-                    );
-                  })}
+                <div className="table-container">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Ticker</th>
+                        <th>Company</th>
+                        <th>Cap</th>
+                        <th>PE</th>
+                        <th>EPS</th>
+                        <th>Price</th>
+                        <th>Change</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cards.map((st: any) => {
+                        const quote = quotes[st.t];
+                        const chg = quote?.dp;
+                        const colorMap: any = { established:'var(--established)', aggressive:'var(--aggressive)', speculative:'var(--speculative)' };
+                        
+                        return (
+                          <tr 
+                            key={st.t} 
+                            onClick={() => toggleCard(st.t)}
+                            style={{ '--type-color': colorMap[st.type] } as any}
+                          >
+                            <td className="dt-ticker">
+                              <div className="dt-type-dot"></div>
+                              {st.t.split('.')[0]}
+                            </td>
+                            <td className="dt-company">{st.c}</td>
+                            <td className="dt-cap">{st.cap}</td>
+                            <td className="dt-cap">{st.trailing_pe > 0 ? st.trailing_pe.toFixed(1) : '-'}</td>
+                            <td className="dt-cap">{st.eps !== 0 && st.eps !== undefined ? st.eps.toFixed(1) : '-'}</td>
+                            {quote ? (
+                              <>
+                                <td className="dt-price">{activeGeo === 'India' ? '₹' : activeGeo === 'Europe' ? '€' : '$'}{quote.c?.toFixed(2)}</td>
+                                <td className={`dt-chg ${chg > 0 ? 'up' : chg < 0 ? 'down' : 'neutral'}`}>
+                                  {chg > 0 ? '▲' : chg < 0 ? '▼' : ''} {Math.abs(chg || 0).toFixed(2)}%
+                                </td>
+                              </>
+                            ) : (
+                              <>
+                                <td><span className="skeleton" style={{width: '60px', height: '14px', display: 'inline-block'}}></span></td>
+                                <td><span className="skeleton" style={{width: '40px', height: '14px', display: 'inline-block'}}></span></td>
+                              </>
+                            )}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             );
