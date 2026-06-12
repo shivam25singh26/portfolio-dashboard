@@ -102,7 +102,7 @@ export default function DashboardOverview() {
     }
     setLoadingUniverse(true);
     try {
-      const res = await fetch(`/go-api/universe?region=India&page=1&limit=3000`);
+      const res = await fetch(`/go-api/universe?region=India&page=1&limit=3000&timestamp=${Date.now()}`);
       if (res.ok) {
         const data = await res.json();
         
