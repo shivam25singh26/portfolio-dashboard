@@ -290,9 +290,6 @@ export default function DashboardOverview() {
           <button className={activeGeo === "India" ? "on" : ""} onClick={() => { setActiveGeo("India"); setOpenSectors({0: true}); }}>INDIA</button>
           <button className={activeGeo === "Pre-IPO" ? "on" : ""} onClick={() => { setActiveGeo("Pre-IPO"); setOpenSectors({0: true}); }}>PRE-IPO</button>
         </div>
-        {activeGeo === "India" && (
-          <a href="/fo" style={{ padding: '10px 16px', background: 'var(--accent)', color: '#04130b', textDecoration: 'none', borderRadius: 'var(--radius)', fontFamily: "'Spline Sans Mono', monospace", fontSize: '12px', fontWeight: 600, display: 'inline-block' }}>F&O Terminal ↗</a>
-        )}
         <input 
           className="search" 
           placeholder="search ticker, company, sector, catalyst…" 
@@ -333,14 +330,14 @@ export default function DashboardOverview() {
                   <table className="data-table">
                     <thead>
                       <tr>
-                        <th>Ticker</th>
-                        <th>Company</th>
-                        <th>Cap</th>
-                        <th>Mkt Cap</th>
-                        <th>PE</th>
-                        <th>EPS</th>
-                        <th>Price</th>
-                        <th>Change</th>
+                        <th scope="col">Ticker</th>
+                        <th scope="col">Company</th>
+                        <th scope="col">Cap</th>
+                        <th scope="col">Mkt Cap</th>
+                        <th scope="col">PE</th>
+                        <th scope="col">EPS</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Change</th>
                       </tr>
                     </thead>
                     <tbody>

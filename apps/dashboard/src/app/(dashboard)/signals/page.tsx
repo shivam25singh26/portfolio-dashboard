@@ -26,18 +26,42 @@ export default function SignalsPage() {
     }
   };
 
-  useEffect(() => {
-    fetch('/go-api/insights', { cache: 'no-store' })
-      .then(res => res.json())
+  const [insightsError, setInsightsError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+
+  const fetchInsights = (attempt = 0) => {
+    setInsightsError(false);
+    setInsightsLoading(true);
+    
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    
+    fetch('/go-api/insights', { cache: 'no-store', signal: controller.signal })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then(data => {
+        clearTimeout(timeout);
         setAiInsights(data || []);
         setInsightsLoading(false);
       })
       .catch(err => {
+        clearTimeout(timeout);
         console.error("Failed to fetch insights", err);
-        setInsightsLoading(false);
+        if (attempt < 2) {
+          // Exponential backoff: retry after 2s, 4s
+          setTimeout(() => fetchInsights(attempt + 1), (attempt + 1) * 2000);
+        } else {
+          setInsightsError(true);
+          setInsightsLoading(false);
+        }
       });
-      
+  };
+
+  useEffect(() => {
+    fetchInsights();
+    
     // WebSocket for Live Prices
     const wsUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/^https/, 'wss').replace(/^http/, 'ws') || 'ws://127.0.0.1:8080';
     const ws = new WebSocket(`${wsUrl}/ws/live`);
@@ -50,7 +74,7 @@ export default function SignalsPage() {
       } catch (e) {}
     };
     return () => ws.close();
-  }, []);
+  }, [retryCount]);
 
   const handleExecuteTrade = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,7 +114,24 @@ export default function SignalsPage() {
       </header>
       <main className="page-main">
         {insightsLoading ? (
-          <div style={{ color: 'var(--dim)' }}>Loading AI Insights from Go Gateway...</div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '80px 0', color: 'var(--dim)' }}>
+            <svg style={{ animation: 'spin 1s linear infinite' }} width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" strokeDasharray="31.4 31.4" /></svg>
+            <div>Connecting to AI Engine... (auto-retrying)</div>
+          </div>
+        ) : insightsError ? (
+          <div className="empty-state" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '80px 0' }}>
+            <div style={{ fontSize: '48px' }}>⚡</div>
+            <h3 style={{ color: 'var(--ink)', margin: 0 }}>AI Engine Offline</h3>
+            <p style={{ color: 'var(--dim)', maxWidth: '360px', textAlign: 'center', lineHeight: '1.6' }}>
+              The signal engine is not responding. It may be warming up or processing market scans.
+            </p>
+            <button 
+              onClick={() => setRetryCount(c => c + 1)} 
+              style={{ padding: '10px 24px', background: 'var(--accent)', color: '#000', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: "'Spline Sans Mono', monospace", fontWeight: 600 }}
+            >
+              Retry Connection
+            </button>
+          </div>
         ) : aiInsights.length === 0 ? (
           <div className="empty-state">
             No AI insights found in the database. Waiting for Python Engine to process market scans...

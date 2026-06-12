@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Growth Engines — Premium Global Equity Dashboard",
-  description: "A professional-grade equity research dashboard covering 300+ stocks across US, European, and Indian markets with live pricing, interactive charts, and qualitative analysis.",
+  description: "A professional-grade equity research dashboard covering 223 NSE & BSE listed Indian equities across 11 sectors with live pricing and qualitative analysis.",
   keywords: "stocks, equity, dashboard, finance, investing, NIFTY, S&P 500, screener",
 };
 
@@ -11,8 +11,6 @@ import { Viewport } from "next";
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: "cover",
 };
 

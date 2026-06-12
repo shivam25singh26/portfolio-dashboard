@@ -2972,6 +2972,15 @@
               "catalyst": "Morbi ceramic cluster gas demand recovery; expansion into new GAs in Gujarat and additional industrial clusters driving volume growth beyond 10 MMSCMD.",
               "moat": "Gujarat State Petronet pipeline backbone provides captive infrastructure; dominant industrial gas supplier in Morbi, the world's second-largest ceramic hub.",
               "risk": "Heavy dependence on Morbi ceramic cluster (40%+ volumes) creates concentration; industrial gas demand cyclical and sensitive to ceramic export market conditions."
+            },
+            {
+              "t": "ATGL.NS",
+              "c": "Adani Total Gas Ltd.",
+              "type": "aggressive",
+              "cap": "Mid",
+              "catalyst": "Aggressive CNG station rollout (target 1,500+ stations) in 52 GAs; EV charging infrastructure addition at existing CNG stations creating dual-fuel energy retail network.",
+              "moat": "Total Energies JV brings global gas distribution expertise; large GA portfolio across Gujarat, Rajasthan, and Haryana provides long-term volume growth runway.",
+              "risk": "Adani Group governance concerns; capital-intensive network buildout requires sustained funding; PNGRB tariff regulation limits pricing flexibility."
             }
           ]
         },
@@ -3162,7 +3171,7 @@
     },
     {
       "sector": "Consumer Discretionary",
-      "num": "CON",
+      "num": "CDS",
       "subs": [
         {
           "name": "Passenger Vehicles",
@@ -3237,15 +3246,7 @@
               "moat": "Third-largest two-wheeler company with strong scooter franchise (Jupiter); Norton Motorcycles acquisition provides premium motorcycle brand for global markets.",
               "risk": "Margin pressure from EV investments and Norton brand-building; competition from Bajaj in premium motorcycles; limited international presence compared to Bajaj Auto exports."
             },
-            {
-              "t": "ATGL.NS",
-              "c": "Adani Total Gas Ltd.",
-              "type": "aggressive",
-              "cap": "Mid",
-              "catalyst": "Aggressive CNG station rollout (target 1,500+ stations) in 52 GAs; EV charging infrastructure addition at existing CNG stations creating dual-fuel energy retail network.",
-              "moat": "Total Energies JV brings global gas distribution expertise; large GA portfolio across Gujarat, Rajasthan, and Haryana provides long-term volume growth runway.",
-              "risk": "Adani Group governance concerns; capital-intensive network buildout requires sustained funding; PNGRB tariff regulation limits pricing flexibility."
-            }
+
           ]
         },
         {
@@ -4212,7 +4213,7 @@
     },
     {
       "sector": "Consumer Staples",
-      "num": "CON",
+      "num": "CST",
       "subs": [
         {
           "name": "FMCG Large Cap",
