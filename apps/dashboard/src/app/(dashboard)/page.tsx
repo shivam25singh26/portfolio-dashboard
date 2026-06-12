@@ -23,6 +23,7 @@ export default function DashboardOverview() {
   const [activeType, setActiveType] = useState<string>("all");
   const [query, setQuery] = useState("");
   const [marketData, setMarketData] = useState<any>(stocksData);
+  const [isIndiaFetched, setIsIndiaFetched] = useState(false);
   const [loadingUniverse, setLoadingUniverse] = useState(false);
   const [openSectors, setOpenSectors] = useState<Record<number, boolean>>({ 0: true });
   const [quotes, setQuotes] = useState<Record<string, any>>({});
@@ -95,8 +96,8 @@ export default function DashboardOverview() {
   }, [activeGeo]);
 
   const fetchUniverse = async () => {
-    if (marketData['India'] && marketData['India'].length > 0 && marketData['India'][0]?.subs?.length > 0) {
-      // Already fetched
+    if (isIndiaFetched) {
+      // Already fetched from API
       return;
     }
     setLoadingUniverse(true);
@@ -138,6 +139,7 @@ export default function DashboardOverview() {
         }));
 
         setMarketData((prev: any) => ({ ...prev, India: newIndiaData }));
+        setIsIndiaFetched(true);
       }
     } catch (e) {
       console.error("Failed to fetch universe", e);
