@@ -291,7 +291,7 @@ export default function DashboardOverview() {
                     return (
                       <div 
                         key={st.t} 
-                        className={`card ${expandedCard === st.t ? 'expanded' : ''}`}
+                        className={`card`}
                         onClick={() => toggleCard(st.t)}
                         style={{ '--type-color': colorMap[st.type] } as any}
                       >
@@ -335,53 +335,7 @@ export default function DashboardOverview() {
                           )}
                         </div>
 
-                        <div className="field catalyst">
-                          <div className="field-label"><span className="dot catalyst"></span>Future Catalyst</div>
-                          <div className="field-text">{st.catalyst}</div>
-                        </div>
-                        <div className="field moat">
-                          <div className="field-label"><span className="dot moat"></span>Competitive Moat</div>
-                          <div className="field-text">{st.moat}</div>
-                        </div>
-                        <div className="field risk">
-                          <div className="field-label"><span className="dot risk"></span>Risk Factor</div>
-                          <div className="field-text">{st.risk}</div>
-                        </div>
-
-                        {expandedCard === st.t && (
-                          <div className="card-details" onClick={(e) => e.stopPropagation()}>
-                            {d?.loading && <div className="details-loading">Loading metrics, charts & news...</div>}
-                            {d?.error && <div className="details-error">Failed to load deep metrics.</div>}
-                            
-                            {d?.metrics && (
-                              <div className="metrics-grid">
-                                <div className="metric-item"><span>Mkt Cap</span><strong>{d.metrics.metric?.marketCapitalization ? '$' + (d.metrics.metric.marketCapitalization / 1000).toFixed(1) + 'B' : 'N/A'}</strong></div>
-                                <div className="metric-item"><span>P/E (Ann)</span><strong>{d.metrics.metric?.peNormalizedAnnual?.toFixed(1) || 'N/A'}</strong></div>
-                                <div className="metric-item"><span>52W High</span><strong>{d.metrics.metric?.['52WeekHigh'] ? '$' + d.metrics.metric['52WeekHigh'].toFixed(2) : 'N/A'}</strong></div>
-                                <div className="metric-item"><span>52W Low</span><strong>{d.metrics.metric?.['52WeekLow'] ? '$' + d.metrics.metric['52WeekLow'].toFixed(2) : 'N/A'}</strong></div>
-                              </div>
-                            )}
-                            
-                            {d?.candle?.s === 'ok' && (
-                              <div className="chart-wrapper">
-                                <div className="sparkline-title">6-Month Interactive Chart</div>
-                                <ChartComponent data={d.candle} color={d.candle.c[d.candle.c.length-1] >= d.candle.c[0] ? '#26a69a' : '#ef5350'} />
-                              </div>
-                            )}
-
-                            {d?.news && d.news.length > 0 && (
-                              <div className="news-feed">
-                                <div className="sparkline-title" style={{ marginTop: '16px' }}>Recent News</div>
-                                {d.news.map((n: any, idx: number) => (
-                                  <a key={idx} href={n.url} target="_blank" rel="noopener noreferrer" className="news-item">
-                                    <div className="news-source">{n.source} • {new Date(n.datetime * 1000).toLocaleDateString()}</div>
-                                    <div className="news-headline">{n.headline}</div>
-                                  </a>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
+                        {/* Clean grid card - details moved to Slide-Over Drawer */}
                       </div>
                     );
                   })}
@@ -436,6 +390,110 @@ export default function DashboardOverview() {
           {scanStatus === 'scanning' ? 'Scanning…' : scanStatus === 'done' ? 'Scan Sent!' : scanStatus === 'error' ? 'Failed' : 'AI Scan'}
         </span>
       </button>
+
+      {/* --- SLIDE-OVER DRAWER --- */}
+      {expandedCard && (() => {
+        const selectedStock = allStocks.find((s: any) => s.t === expandedCard);
+        const sq = quotes[expandedCard];
+        const sd = details[expandedCard];
+        if (!selectedStock) return null;
+
+        const chg = sq && sq.pc ? ((sq.c - sq.pc) / sq.pc) * 100 : 0;
+        
+        return (
+          <>
+            <div className="drawer-overlay" onClick={() => setExpandedCard(null)}></div>
+            <div className="drawer-panel">
+              <div className="drawer-header">
+                <div className="drawer-header-info">
+                  <h2>{selectedStock.t.split('.')[0]}</h2>
+                  <p>{selectedStock.c}</p>
+                </div>
+                <button className="drawer-close" onClick={() => setExpandedCard(null)}>✕</button>
+              </div>
+
+              <div className="drawer-content">
+                {/* Price Section */}
+                <div className="drawer-price-card">
+                  {sq ? (
+                    <div className="dp-live">
+                      <div className="dp-main">
+                        <span className="dp-val">{activeGeo === 'India' ? '₹' : activeGeo === 'Europe' ? '€' : '$'}{sq.c?.toFixed(2)}</span>
+                        <span className={`dp-chg ${chg >= 0 ? 'up' : 'down'}`}>
+                          {chg >= 0 ? '▲' : '▼'} {chg?.toFixed(2)}%
+                        </span>
+                      </div>
+                      <div className="badges">
+                        <span className={`badge ${selectedStock.type}`}>{selectedStock.type}</span>
+                        <span className="badge cap">{selectedStock.cap} cap</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="skeleton" style={{height:'30px', width:'100px'}}></div>
+                  )}
+                </div>
+
+                {/* Qualitative Fields */}
+                <div className="drawer-section">
+                  <h3>AI Qualitative Analysis</h3>
+                  <div className="field catalyst">
+                    <div className="field-label"><span className="dot catalyst"></span>Future Catalyst</div>
+                    <div className="field-text">{selectedStock.catalyst}</div>
+                  </div>
+                  <div className="field moat">
+                    <div className="field-label"><span className="dot moat"></span>Competitive Moat</div>
+                    <div className="field-text">{selectedStock.moat}</div>
+                  </div>
+                  <div className="field risk">
+                    <div className="field-label"><span className="dot risk"></span>Risk Factor</div>
+                    <div className="field-text">{selectedStock.risk}</div>
+                  </div>
+                </div>
+
+                {/* Details / Chart / News */}
+                {sd?.loading && <div className="details-loading">Loading deep metrics...</div>}
+                {sd?.error && <div className="details-error">Failed to load API details.</div>}
+
+                {sd?.metrics && (
+                  <div className="drawer-section">
+                    <h3>Technicals & Valuation</h3>
+                    <div className="metrics-grid">
+                      <div className="metric-item"><span>Mkt Cap</span><strong>{sd.metrics.metric?.marketCapitalization ? '$' + (sd.metrics.metric.marketCapitalization / 1000).toFixed(1) + 'B' : 'N/A'}</strong></div>
+                      <div className="metric-item"><span>P/E (Ann)</span><strong>{sd.metrics.metric?.peNormalizedAnnual?.toFixed(1) || 'N/A'}</strong></div>
+                      <div className="metric-item"><span>52W High</span><strong>{sd.metrics.metric?.['52WeekHigh'] ? '$' + sd.metrics.metric['52WeekHigh'].toFixed(2) : 'N/A'}</strong></div>
+                      <div className="metric-item"><span>52W Low</span><strong>{sd.metrics.metric?.['52WeekLow'] ? '$' + sd.metrics.metric['52WeekLow'].toFixed(2) : 'N/A'}</strong></div>
+                    </div>
+                  </div>
+                )}
+
+                {sd?.candle?.s === 'ok' && (
+                  <div className="drawer-section">
+                    <h3>6-Month Interactive Chart</h3>
+                    <div className="chart-wrapper">
+                      <ChartComponent data={sd.candle} color={sd.candle.c[sd.candle.c.length-1] >= sd.candle.c[0] ? '#26a69a' : '#ef5350'} />
+                    </div>
+                  </div>
+                )}
+
+                {sd?.news && sd.news.length > 0 && (
+                  <div className="drawer-section">
+                    <h3>Recent Institutional News</h3>
+                    <div className="news-feed">
+                      {sd.news.map((n: any, idx: number) => (
+                        <a key={idx} href={n.url} target="_blank" rel="noopener noreferrer" className="news-item">
+                          <div className="news-source">{n.source} • {new Date(n.datetime * 1000).toLocaleDateString()}</div>
+                          <div className="news-headline">{n.headline}</div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        );
+      })()}
+
     </>
   );
 }
