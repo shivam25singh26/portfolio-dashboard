@@ -335,6 +335,7 @@ export default function DashboardOverview() {
                         <th>Ticker</th>
                         <th>Company</th>
                         <th>Cap</th>
+                        <th>Mkt Cap</th>
                         <th>PE</th>
                         <th>EPS</th>
                         <th>Price</th>
@@ -359,6 +360,11 @@ export default function DashboardOverview() {
                             </td>
                             <td className="dt-company">{st.c}</td>
                             <td className="dt-cap">{st.cap}</td>
+                            <td className="dt-cap" style={{ fontSize: '10px' }}>
+                              {st.market_cap_val > 0 
+                                ? `₹${(st.market_cap_val / 10000000).toLocaleString('en-IN', {maximumFractionDigits: 0})}Cr / $${(st.market_cap_val / (83.5 * 1000000000)).toFixed(1)}B` 
+                                : '-'}
+                            </td>
                             <td className="dt-cap">{st.trailing_pe > 0 ? st.trailing_pe.toFixed(1) : '-'}</td>
                             <td className="dt-cap">{st.eps !== 0 && st.eps !== undefined ? st.eps.toFixed(1) : '-'}</td>
                             {quote ? (
