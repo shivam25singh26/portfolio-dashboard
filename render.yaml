@@ -19,26 +19,16 @@ services:
       - key: ANGELONE_TOTP_SECRET
         sync: false
 
-  - type: worker
+  - type: web
     name: ai-signal-engine
     env: python
     rootDir: apps/ai-engine
     buildCommand: pip install -r requirements.txt
-    startCommand: python mq.py
+    startCommand: bash start_python.sh
     envVars:
       - key: AMQP_URL
         sync: false
       - key: GEMINI_API_KEY
-        sync: false
-
-  - type: worker
-    name: ai-telegram-bot
-    env: python
-    rootDir: apps/ai-engine
-    buildCommand: pip install -r requirements.txt
-    startCommand: python telegram_bot.py
-    envVars:
-      - key: AMQP_URL
         sync: false
       - key: TELEGRAM_BOT_TOKEN
         sync: false
