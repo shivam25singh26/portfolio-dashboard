@@ -48,8 +48,6 @@ const QUERY_TEMPLATES = [
   },
 ];
 
-import stocksData from "../../data/stocks.json";
-
 export default function ScreenerPage() {
   const [query, setQuery] = useState("Market Cap > 5000 AND PE < 15 AND Price > 100");
   const [results, setResults] = useState<any[]>([]);
@@ -60,76 +58,27 @@ export default function ScreenerPage() {
 
   const runQuery = async (q?: string) => {
     const finalQuery = q ?? query;
-    if (!finalQuery.trim()) return;
-    
     setLoading(true);
     setError(null);
     setHasRun(true);
     
-    setTimeout(() => {
-      try {
-        const allIndiaStocks = (stocksData as any).India.flatMap((sec: any) => 
-          sec.subs.flatMap((sub: any) => 
-            sub.stocks.map((st: any) => ({
-              ticker: st.t,
-              company: st.c,
-              sector: sec.sector,
-              market_cap_val: st.market_cap_val || 0,
-              trailing_pe: st.trailing_pe || 0,
-              eps: st.eps || 0,
-              last_price: st.last_price || 0,
-              roe: st.roe || 0,
-              roce: st.roce || 0,
-              debt_to_equity: st.debt_to_equity || 0,
-              dividend_yield: st.dividend_yield || 0,
-              sales_growth: st.sales_growth || 0,
-              profit_growth: st.profit_growth || 0
-            }))
-          )
-        );
-
-        const conditions = finalQuery.split(/\s+AND\s+/i);
-        const filtered = allIndiaStocks.filter((st: any) => {
-          for (const cond of conditions) {
-            let matches = cond.match(/(.*?)\s*(>|<|>=|<=|=)\s*(.*)/);
-            if (!matches) throw new Error("Invalid syntax: " + cond);
-            
-            let fieldRaw = matches[1].trim().toLowerCase();
-            const op = matches[2].trim();
-            const val = parseFloat(matches[3].trim());
-            
-            if (isNaN(val)) throw new Error("Invalid number in: " + cond);
-            
-            let fieldVal = 0;
-            if (fieldRaw.includes("market cap")) fieldVal = st.market_cap_val / 10000000;
-            else if (fieldRaw === "pe") fieldVal = st.trailing_pe;
-            else if (fieldRaw === "eps") fieldVal = st.eps;
-            else if (fieldRaw === "price") fieldVal = st.last_price;
-            else if (fieldRaw === "roe") fieldVal = st.roe;
-            else if (fieldRaw === "roce") fieldVal = st.roce;
-            else if (fieldRaw.includes("debt")) fieldVal = st.debt_to_equity;
-            else if (fieldRaw.includes("dividend") || fieldRaw === "yield") fieldVal = st.dividend_yield;
-            else if (fieldRaw.includes("sales")) fieldVal = st.sales_growth;
-            else if (fieldRaw.includes("profit")) fieldVal = st.profit_growth;
-            else throw new Error("Unknown field: " + matches[1]);
-            
-            if (op === '>') { if (!(fieldVal > val)) return false; }
-            else if (op === '<') { if (!(fieldVal < val)) return false; }
-            else if (op === '>=') { if (!(fieldVal >= val)) return false; }
-            else if (op === '<=') { if (!(fieldVal <= val)) return false; }
-            else if (op === '=') { if (!(fieldVal === val)) return false; }
-          }
-          return true;
-        });
-        
-        filtered.sort((a: any, b: any) => b.market_cap_val - a.market_cap_val);
-        setResults(filtered);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+    try {
+      const res = await fetch('/go-api/screen/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: finalQuery })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to execute query');
       }
-    }, 400);
+      setResults(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const applyTemplate = (template: typeof QUERY_TEMPLATES[0]) => {
